@@ -12,13 +12,13 @@ const HEIGHT = 20;
 // Takes an integer x, 0 <= x < WIDTH, an integer y, 0 <= y < HEIGHT,
 // and a color given in RGB as a vec3.  Changes the pixel to that color
 // in the paint program. Returns 0 if successful, -1 otherwise.
-function write_pixel(x, y, color){
+function write_pixel(x, y, color) {
 
     if (x >= 0 && x < WIDTH && y >= 0 && y < HEIGHT) {
 
         // Update color in our model.
         for (var i = 0; i < 6; i++)
-            pixel_colors[6 * pixel_to_ix(x,y) + i] = color;
+            pixel_colors[6 * pixel_to_ix(x, y) + i] = color;
 
         // Update color in buffer.
         // Use bufferSubData to only make a partial update.
@@ -36,32 +36,29 @@ function write_pixel(x, y, color){
 }
 
 
-
 // Returns the pixel HEIGHT of the painting area.
-function get_height(){
+function get_height() {
 
     return HEIGHT;
 }
 
 // Returns the pixel WIDTH of the painting area.
-function get_width(){
+function get_width() {
 
     return WIDTH;
 
 }
 
 
-
-
 // Constants for primary colors.
-const COLOR_WHITE = vec3(1.0,1.0,1.0);
-const COLOR_BLACK = vec3(0.0,0.0,0.0);
-const COLOR_CYAN = vec3(0.0,1.0,1.0);
-const COLOR_MAGENTA = vec3(1.0,0.0,1.0);
-const COLOR_YELLOW = vec3(1.0,1.0,0.0);
-const COLOR_RED = vec3(1.0,0.0,0.0);
-const COLOR_GREEN = vec3(0.0,1.0,0.0);
-const COLOR_BLUE = vec3(0.0,0.0,1.0);
+const COLOR_WHITE = vec3(1.0, 1.0, 1.0);
+const COLOR_BLACK = vec3(0.0, 0.0, 0.0);
+const COLOR_CYAN = vec3(0.0, 1.0, 1.0);
+const COLOR_MAGENTA = vec3(1.0, 0.0, 1.0);
+const COLOR_YELLOW = vec3(1.0, 1.0, 0.0);
+const COLOR_RED = vec3(1.0, 0.0, 0.0);
+const COLOR_GREEN = vec3(0.0, 1.0, 0.0);
+const COLOR_BLUE = vec3(0.0, 0.0, 1.0);
 
 // A flat array of the colors for all pixel vertices.
 // Used to remember colors for read_pixel.
@@ -87,10 +84,11 @@ var edit_mode = POINT_MODE;
 // Stores history of points clicked.
 var clicks_to_draw = []; // Stores clicks not yet rendered
 var clicks_last_drawn = []; // Stores clicks for object last renders.
+var gridEnabled = true;
 
 // Renders the frame.
-function render(){
-    setTimeout(function() {
+function render() {
+    setTimeout(function () {
 
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
@@ -104,13 +102,15 @@ function render(){
         gl.drawArrays(gl.TRIANGLES, 0, pixel_colors.length);
 
         // Draw grid_verts
-        gl.bindBuffer(gl.ARRAY_BUFFER, grid_color_buffer);
-        gl.vertexAttribPointer(vColor, 3, gl.FLOAT, false, 0, 0);
-        gl.enableVertexAttribArray(vColor);
-        gl.bindBuffer(gl.ARRAY_BUFFER, grid_vert_buffer);
-        gl.vertexAttribPointer(vPosition, 3, gl.FLOAT, false, 0, 0);
-        gl.enableVertexAttribArray(vPosition);
-        gl.drawArrays(gl.LINES, 0, grid_colors.length);
+        if (gridEnabled) {
+            gl.bindBuffer(gl.ARRAY_BUFFER, grid_color_buffer);
+            gl.vertexAttribPointer(vColor, 3, gl.FLOAT, false, 0, 0);
+            gl.enableVertexAttribArray(vColor);
+            gl.bindBuffer(gl.ARRAY_BUFFER, grid_vert_buffer);
+            gl.vertexAttribPointer(vPosition, 3, gl.FLOAT, false, 0, 0);
+            gl.enableVertexAttribArray(vPosition);
+            gl.drawArrays(gl.LINES, 0, grid_colors.length);
+        }
 
         // Draw the click history for debugging.
         if (clicks_last_drawn.length > 0 || clicks_to_draw.length > 0) {
@@ -121,7 +121,7 @@ function render(){
             // Decide to drawn in progress object or previous one.
             var clicks = clicks_last_drawn;
             var draw_color = COLOR_BLACK;
-            if (clicks_to_draw.length > 1){
+            if (clicks_to_draw.length > 1) {
                 clicks = clicks_to_draw;
                 draw_color = COLOR_MAGENTA;
             }
@@ -170,30 +170,29 @@ function render(){
 //////////////////////////////////////////////////////////////////////////
 
 
-
 // Converts integer pixel coordinates to index in flatten array.
-function pixel_to_ix(x, y){
-    return (y*WIDTH + x);
+function pixel_to_ix(x, y) {
+    return (y * WIDTH + x);
 }
 
 // Initializes vertex and color buffer to draw the grid_verts.
-function init_grid(){
+function init_grid() {
 
     grid_colors = [];
     var grid_verts = [];
 
     // Create horizontal grid_verts lines.
     for (var y = 0; y <= HEIGHT; y++) {
-        grid_verts.push(vec3(-1,y*V_SIZE - 1,0));
-        grid_verts.push(vec3(1,y*V_SIZE - 1,0));
+        grid_verts.push(vec3(-1, y * V_SIZE - 1, 0));
+        grid_verts.push(vec3(1, y * V_SIZE - 1, 0));
         grid_colors.push(COLOR_BLACK);
         grid_colors.push(COLOR_BLACK);
     }
 
     // Create vertical grid_verts lines.
-    for (var x = 0; x <= WIDTH; x++){
-        grid_verts.push(vec3(x*H_SIZE - 1,-1,0));
-        grid_verts.push(vec3(x*H_SIZE - 1,1,0));
+    for (var x = 0; x <= WIDTH; x++) {
+        grid_verts.push(vec3(x * H_SIZE - 1, -1, 0));
+        grid_verts.push(vec3(x * H_SIZE - 1, 1, 0));
         grid_colors.push(COLOR_BLACK);
         grid_colors.push(COLOR_BLACK);
     }
@@ -219,28 +218,28 @@ function create_rectangle(verts, colors, lower_left, upper_right, color) {
     colors.push(color);
     verts.push(upper_right);
     colors.push(color);
-    verts.push(vec3(lower_left[0],upper_right[1],0));
+    verts.push(vec3(lower_left[0], upper_right[1], 0));
 
     colors.push(color);
     verts.push(lower_left);
     colors.push(color);
     verts.push(upper_right);
     colors.push(color);
-    verts.push(vec3(upper_right[0],lower_left[1],0));
+    verts.push(vec3(upper_right[0], lower_left[1], 0));
 
 }
 
 // Initializes vertex and color buffer to draw the pixels.
-function init_pixels(){
+function init_pixels() {
 
     pixel_colors = [];
     var pixel_verts = [];
 
     // Loop over all the pixel coordinates and create a white square.
-    for (var y = 0; y < HEIGHT; y++){
-        for (var x = 0; x < WIDTH; x++){
-            var lower_left = vec3((x+SPACING)*H_SIZE - 1, (y+SPACING)*V_SIZE - 1,0);
-            var upper_right = vec3((x+1-SPACING)*H_SIZE - 1, (y+1-SPACING)*V_SIZE - 1,0);
+    for (var y = 0; y < HEIGHT; y++) {
+        for (var x = 0; x < WIDTH; x++) {
+            var lower_left = vec3((x + SPACING) * H_SIZE - 1, (y + SPACING) * V_SIZE - 1, 0);
+            var upper_right = vec3((x + 1 - SPACING) * H_SIZE - 1, (y + 1 - SPACING) * V_SIZE - 1, 0);
             create_rectangle(pixel_verts, pixel_colors, lower_left, upper_right, COLOR_WHITE);
         }
     }
@@ -257,7 +256,7 @@ function init_pixels(){
 }
 
 // Erase all pixels.  Resets points clicked.
-function clear_pixels(){
+function clear_pixels() {
 
     // Sets all pixel_colors to white.
     for (var i = 0; i < pixel_colors.length; i++)
@@ -277,12 +276,12 @@ function clear_pixels(){
 // Returns the color of that pixel in RGB as a vec3.  Returns black if
 // inputs are out of range.  You're not allowed to use this function
 // for Project 1.
-function read_pixel(x, y){
+function read_pixel(x, y) {
 
     if (x >= 0 && x < WIDTH && y >= 0 && y < HEIGHT)
         return pixel_colors[6 * pixel_to_ix(x, y)];
     else
-        return vec3(0.0,0.0,0.0);
+        return vec3(0.0, 0.0, 0.0);
 
 }
 
@@ -293,7 +292,7 @@ function read_pixel(x, y){
 // future, or if sufficient clicks have been made
 // to draw the object, it calls the appropriate
 // rasterization function.
-function mouse_click_listener(){
+function mouse_click_listener() {
 
     // Get the click's position in canvas coordinates.
     // Origin upper left corner of canvas
@@ -318,7 +317,7 @@ function mouse_click_listener(){
     // Draw based on editing mode.
     if (edit_mode == POINT_MODE) {
 
-        rasterize_point(point_clicked,draw_color);
+        rasterize_point(point_clicked, draw_color);
 
     } else {
 
@@ -363,9 +362,9 @@ function mouse_click_listener(){
 
 // Handles click on drawing mode menu.
 // Resets object points if mode changes.
-function edit_mode_listener(){
+function edit_mode_listener() {
 
-    if (edit_mode != this.selectedIndex){
+    if (edit_mode != this.selectedIndex) {
         // Reset the points clicked for
         // drawing the current object.
         clicks_to_draw = [];
@@ -377,28 +376,34 @@ function edit_mode_listener(){
 }
 
 // Install event listeners for UI elements.
-function init_listeners(){
+function init_listeners() {
 
     // Listen for mouse clicks.
-    canvas.addEventListener("click",mouse_click_listener);
+    canvas.addEventListener("click", mouse_click_listener);
     // Listen for clicks on erase button to call clear_pixels().
     var erase_button = document.getElementById("EraseButton");
     erase_button.addEventListener("click", clear_pixels);
     // Listen for clicks on the drawing mode menu.
     var edit_menu = document.getElementById("EditMode");
     edit_menu.addEventListener("click", edit_mode_listener);
+    var grid_button = document.getElementById("GridButton");
+    grid_button.addEventListener("click", toggle_grid);
 
 }
 
-function init(){
+function toggle_grid() {
+    gridEnabled = !gridEnabled;
+}
+
+function init() {
 
     // Initialize WebGL.
     canvas = document.getElementById("gl-canvas");
     gl = WebGLUtils.setupWebGL(canvas);
-    if (!gl){
+    if (!gl) {
         alert("WebGL isn't available");
     }
-    gl.viewport(0,0,canvas.width, canvas.height);
+    gl.viewport(0, 0, canvas.width, canvas.height);
     gl.clearColor(1.0, 1.0, 1.0, 1.0);
     gl.enable(gl.DEPTH_TEST);
 
