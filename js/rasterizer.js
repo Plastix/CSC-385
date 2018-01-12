@@ -49,10 +49,13 @@ function rasterize_line(point1, point2, color) {
 
     var y = y1;
     var p = (2 * dy) - dx;
+    var pixels = [];
     for (var x = x1; x <= x2; x++) {
         if (swap) {
+            pixels.push(vec2(y, x));
             write_pixel(y, x, color);
         } else {
+            pixels.push(vec2(x, y));
             write_pixel(x, y, color);
         }
 
@@ -65,6 +68,8 @@ function rasterize_line(point1, point2, color) {
         }
     }
 
+    // Returns a list of colored pixels
+    return pixels;
 }
 
 // Takes two points given as vec2 in pixel
@@ -93,8 +98,40 @@ function rasterize_triangle(point1, point2, point3, color) {
 // of the color. Implemented using flood fill.
 function rasterize_filled_triangle(point1, point2, point3, color) {
 
-    // Implement me!
+    var points = [];
+    var colored = {};
 
+    points = points.concat(rasterize_line(point1, point2, color));
+    points = points.concat(rasterize_line(point2, point3, color));
+    points = points.concat(rasterize_line(point3, point1, color));
+
+    var flood_fill = function (pixel) {
+        var x = pixel[0], y = pixel[1];
+        // Base case
+        if (colored[pixel] || x < 0 || x > WIDTH || y < 0 || y > WIDTH) {
+            return;
+        }
+
+        write_pixel(x, y, color);
+        colored[pixel] = true;
+
+        // Recursively color
+        flood_fill(vec2(x + 1, y));
+        flood_fill(vec2(x - 1, y));
+        flood_fill(vec2(x, y + 1));
+        flood_fill(vec2(x, y - 1));
+    };
+
+    var contains_point = function (pixel) {
+        // TODO (Aidan)
+        return true;
+    };
+
+    points.forEach(function (pixel) {
+        if (!colored[pixel] && contains_point(pixel)) {
+            flood_fill(pixel)
+        }
+    });
 }
 
 // Takes an array of seven points given as vec2 in pixel
