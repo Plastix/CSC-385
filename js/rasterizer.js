@@ -18,13 +18,13 @@ function rasterize_point(point, color) {
 // Draws line between the points of the color.
 // Implemented using Bresenham's Algorithm.
 function rasterize_line(point1, point2, color) {
-    var x1 = point1[0];
-    var x2 = point2[0];
-    var y1 = point1[1];
-    var y2 = point2[1];
+    let x1 = point1[0];
+    let x2 = point2[0];
+    let y1 = point1[1];
+    let y2 = point2[1];
 
     // Swap X and Y if slope > 1
-    var swap = false;
+    let swap = false;
     if (Math.abs(x2 - x1) < Math.abs(y2 - y1)) {
         [x1, y1] = [y1, x1]; // EMCA6 syntax
         [x2, y2] = [y2, x2];
@@ -37,22 +37,23 @@ function rasterize_line(point1, point2, color) {
         [y1, y2] = [y2, y1];
     }
 
-    var dx = x2 - x1;
-    var dy = y2 - y1;
+    let dx = x2 - x1;
+    let dy = y2 - y1;
 
     // Move Y down and swap dy if slope is negative
-    var step = 1;
+    let step = 1;
     if (dy < 0) {
         step = -1;
         dy = -dy;
     }
 
-    var y = y1;
-    var p = (2 * dy) - dx;
-    var pixels = [];
-    for (var x = x1; x <= x2; x++) {
+    let y = y1;
+    let p = (2 * dy) - dx;
+    const pixels = [];
+    for (let x = x1; x <= x2; x++) {
         if (swap) {
             pixels.push(vec2(y, x));
+            // noinspection JSSuspiciousNameCombination
             write_pixel(y, x, color);
         } else {
             pixels.push(vec2(x, y));
