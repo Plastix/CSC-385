@@ -111,9 +111,13 @@ function rasterize_filled_triangle(point1, point2, point3, color) {
     let is_on_segment = (p, e1, e2) => Math.max(e1[0], e2[0]) >= p[0] && p[0] >= Math.min(e1[0], e2[0])
         && Math.max(e1[1], e2[1]) >= p[1] && p[1] >= Math.min(e1[1], e2[1]);
 
+    // From Mozilla documentation
+    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random
+    let get_random = (min, max) => Math.random() * (max - min) + min;
+
     let get_random_point = () => vec2(
-        get_random_int(WIDTH * 100, WIDTH * 100),
-        get_random_int(-HEIGHT, 0)
+        get_random(WIDTH * 10, WIDTH * 100),
+        get_random(-HEIGHT, 0)
     );
 
     let get_neighboring_pixels = (p) => [
@@ -152,16 +156,6 @@ function rasterize_filled_triangle(point1, point2, point3, color) {
         return vec2(x, -y);
     };
 
-
-    // From Mozilla documentation
-    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random
-    let get_random_int = function (min, max) {
-        min = Math.ceil(min);
-        max = Math.floor(max);
-        return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
-    };
-
-
     let contains_point = function (point) {
         let contained = false;
 
@@ -187,10 +181,6 @@ function rasterize_filled_triangle(point1, point2, point3, color) {
                 contained = !contained;
             }
         });
-
-        if (contained) {
-            console.log("point ", point, "inside of", point1, point2, point3);
-        }
 
         return contained;
     };
@@ -232,8 +222,8 @@ function rasterize_filled_triangle(point1, point2, point3, color) {
         )
         .reduce((acc, x) => acc.concat(x)) // Flatten list
         .filter(p => is_in_bounds(p[0], p[1]) && !is_colored(p[0], p[1]) && contains_point(p))
-        .forEach(p => write_pixel(p[0], p[1], vec3(0, 1, 1))) // TODO (Aidan) debug
-    // .forEach(p => flood_fill(p[0], p[1]));
+        .forEach(p => write_pixel(p[0], p[1], vec3(0, 1, 1))) // Debug
+        // .forEach(p => flood_fill(p[0], p[1]));
 }
 
 // Takes an array of seven points given as vec2 in pixel
