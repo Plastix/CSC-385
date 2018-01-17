@@ -111,8 +111,8 @@ function rasterize_filled_triangle(point1, point2, point3, color) {
         && Math.max(e1[1], e2[1]) >= p[1] && p[1] >= Math.min(e1[1], e2[1]);
 
     let get_random_point = () => vec2(
-        get_random_int(WIDTH * 10, WIDTH * 100),
-        get_random_int(0, HEIGHT * 10)
+        get_random_int(WIDTH * 100, WIDTH * 100),
+        get_random_int(-HEIGHT, 0)
     );
 
     let get_neighboring_pixels = (p) => [
@@ -172,7 +172,8 @@ function rasterize_filled_triangle(point1, point2, point3, color) {
             // Generate a random point until we have a non-parallel line segment
             let rand = get_random_point();
             let params = get_line_params(point, rand);
-            while (is_parallel(params, params2)) {
+            while (is_in_bounds(rand[0], rand[1]) || is_parallel(params, params2)) {
+                console.log("Picking a new random point!");
                 rand = get_random_point();
                 params = get_line_params(point, rand);
             }
@@ -186,7 +187,7 @@ function rasterize_filled_triangle(point1, point2, point3, color) {
             }
         });
 
-        if(contained){
+        if (contained) {
             console.log("point ", point, "inside of", point1, point2, point3);
         }
 
