@@ -6,10 +6,11 @@
         attribute vec4 vColor;
         uniform mat4 modelViewMatrix;
         varying vec4 fColor;
+        uniform vec4 shift;
 
         void main()
         {
-            fColor = vColor;
+            fColor = vColor + shift;
             gl_Position = vPosition;
         }
     </script>
@@ -91,6 +92,7 @@
     <br>
     <button id="EraseButton">Erase picture!</button>
     <button id="GridButton">Toggle Grid</button>
+    <button id="PartyButton">Toggle Party Mode</button>
 
     </body>
 </html>

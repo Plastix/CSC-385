@@ -85,12 +85,19 @@ var edit_mode = POINT_MODE;
 var clicks_to_draw = []; // Stores clicks not yet rendered
 var clicks_last_drawn = []; // Stores clicks for object last renders.
 var gridEnabled = true;
+var partyMode = false;
 
 // Renders the frame.
 function render() {
     setTimeout(function () {
 
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+        if (partyMode) {
+            gl.uniform4f(vShift, Math.random(), Math.random(), Math.random(), 1);
+        } else {
+            gl.uniform4f(vShift, 0, 0, 0, 1);
+        }
 
         // Draw pixels
         gl.bindBuffer(gl.ARRAY_BUFFER, pixel_color_buffer);
@@ -389,10 +396,17 @@ function init_listeners() {
     var grid_button = document.getElementById("GridButton");
     grid_button.addEventListener("click", toggle_grid);
 
+    let party_button = document.getElementById("PartyButton");
+    party_button.addEventListener("click", toggle_party)
+
 }
 
 function toggle_grid() {
     gridEnabled = !gridEnabled;
+}
+
+function toggle_party() {
+    partyMode = !partyMode;
 }
 
 function init() {
@@ -412,6 +426,8 @@ function init() {
     gl.useProgram(program);
     vColor = gl.getAttribLocation(program, "vColor");
     vPosition = gl.getAttribLocation(program, "vPosition");
+
+    vShift = gl.getUniformLocation(program, "shift");
 
     // Initialize buffers for grid_verts and pixels.
     init_pixels();
