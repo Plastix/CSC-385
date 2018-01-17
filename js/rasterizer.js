@@ -167,7 +167,7 @@ function rasterize_filled_triangle(point1, point2, point3, color) {
             // Generate a random point until we have a non-parallel line segment
             let rand = get_random_point();
             let params = get_line_params(point, rand);
-            while (is_in_bounds(rand[0], rand[1]) || is_parallel(params, params2)) {
+            while (is_parallel(params, params2)) {
                 console.log("Picking a new random point!");
                 rand = get_random_point();
                 params = get_line_params(point, rand);
@@ -222,8 +222,8 @@ function rasterize_filled_triangle(point1, point2, point3, color) {
         )
         .reduce((acc, x) => acc.concat(x)) // Flatten list
         .filter(p => is_in_bounds(p[0], p[1]) && !is_colored(p[0], p[1]) && contains_point(p))
-        .forEach(p => write_pixel(p[0], p[1], vec3(0, 1, 1))) // Debug
-        // .forEach(p => flood_fill(p[0], p[1]));
+        // .forEach(p => write_pixel(p[0], p[1], vec3(0, 1, 1))) // Debug
+        .forEach(p => flood_fill(p[0], p[1]));
 }
 
 // Takes an array of seven points given as vec2 in pixel
