@@ -6,14 +6,14 @@
 window.onload = init;
 
 // Constants for primary colors.
-const COLOR_WHITE = vec3(1.0,1.0,1.0);
-const COLOR_BLACK = vec3(0.0,0.0,0.0);
-const COLOR_CYAN = vec3(0.0,1.0,1.0);
-const COLOR_MAGENTA = vec3(1.0,0.0,1.0);
-const COLOR_YELLOW = vec3(1.0,1.0,0.0);
-const COLOR_RED = vec3(1.0,0.0,0.0);
-const COLOR_GREEN = vec3(0.0,1.0,0.0);
-const COLOR_BLUE = vec3(0.0,0.0,1.0);
+const COLOR_WHITE = vec3(1.0, 1.0, 1.0);
+const COLOR_BLACK = vec3(0.0, 0.0, 0.0);
+const COLOR_CYAN = vec3(0.0, 1.0, 1.0);
+const COLOR_MAGENTA = vec3(1.0, 0.0, 1.0);
+const COLOR_YELLOW = vec3(1.0, 1.0, 0.0);
+const COLOR_RED = vec3(1.0, 0.0, 0.0);
+const COLOR_GREEN = vec3(0.0, 1.0, 0.0);
+const COLOR_BLUE = vec3(0.0, 0.0, 1.0);
 
 // Remember current drawing mode.
 const WIREFRAME = 0;
@@ -35,22 +35,22 @@ var theta_y = 0;
 var theta_z = 0;
 
 
-function rotateX(theta){
-    return rotate(theta, vec3(1.0,0.0,0.0));
+function rotateX(theta) {
+    return rotate(theta, vec3(1.0, 0.0, 0.0));
 }
 
-function rotateY(theta){
-    return rotate(theta, vec3(0.0,1.0,0.0));
+function rotateY(theta) {
+    return rotate(theta, vec3(0.0, 1.0, 0.0));
 }
 
-function rotateZ(theta){
-    return rotate(theta, vec3(0.0,0.0,1.0));
+function rotateZ(theta) {
+    return rotate(theta, vec3(0.0, 0.0, 1.0));
 }
 
 
 // Renders the frame.
-function render(){
-    setTimeout(function() {
+function render() {
+    setTimeout(function () {
 
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
@@ -68,8 +68,8 @@ function render(){
         // axes affect a point.  (We'll discuss this in
         // much more detail later!)
         var fov = 90;
-        var MV = perspective(fov, gl.canvas.clientWidth/gl.canvas.clientHeight,0.1,10);
-        MV = mult(MV, translate(x,y,z));
+        var MV = perspective(fov, gl.canvas.clientWidth / gl.canvas.clientHeight, 0.1, 10);
+        MV = mult(MV, translate(x, y, z));
         MV = mult(MV, rotateX(theta_x));
         MV = mult(MV, rotateY(theta_y));
         MV = mult(MV, rotateZ(theta_z));
@@ -106,7 +106,7 @@ function render(){
 //////////////////////////////////////////////////////////////////////////
 
 
-function enable_attribute_buffer(attrib, buffer, stride){
+function enable_attribute_buffer(attrib, buffer, stride) {
 
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
     gl.vertexAttribPointer(attrib, stride, gl.FLOAT, false, 0, 0);
@@ -114,7 +114,7 @@ function enable_attribute_buffer(attrib, buffer, stride){
 
 }
 
-function fill_buffer(buffer, array){
+function fill_buffer(buffer, array) {
 
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
     gl.bufferData(gl.ARRAY_BUFFER, flatten(array), gl.STATIC_DRAW);
@@ -143,9 +143,9 @@ function mouse_click_listener() {
 
 // Handles click on drawing mode menu.
 // Resets object points if mode changes.
-function view_mode_listener(){
+function view_mode_listener() {
 
-    if (drawing_mode != this.selectedIndex){
+    if (drawing_mode != this.selectedIndex) {
         // Reset the points clicked for
         // drawing the current object.
         clicks_to_draw = [];
@@ -156,7 +156,7 @@ function view_mode_listener(){
 
 }
 
-function init_mesh(){
+function init_mesh() {
 
     var poses = mesh.get_pos();
     var colors = mesh.get_color();
@@ -172,19 +172,19 @@ function init_mesh(){
             line_colors.push(colors[j + i]);
             line_colors.push(colors[j + (i + 1) % 3]);
         }
-        j+=3;
+        j += 3;
     }
-    fill_buffer(line_buffer,line_poses);
+    fill_buffer(line_buffer, line_poses);
     fill_buffer(line_color_buffer, line_colors);
     num_lines = line_poses.length;
 
-    fill_buffer(pos_buffer,poses);
-    fill_buffer(color_buffer,colors);
+    fill_buffer(pos_buffer, poses);
+    fill_buffer(color_buffer, colors);
     num_vertices = poses.length;
 
 }
 
-function set_mesh(mode){
+function set_mesh(mode) {
 
     mesh_mode = mode;
 
@@ -198,7 +198,7 @@ function set_mesh(mode){
                 [vec4(0.5, -0.5, 0.5, 1), vec4(1, 0, 1, 1)],
                 [vec4(0.5, 0.5, 0.5, 1), vec4(1, 1, 1, 1)],
                 [vec4(-0.5, 0.5, 0.5, 1), vec4(0, 1, 1, 1)]
-                ],
+            ],
             [[0, 2, 1], [0, 3, 2], [1, 2, 5], [6, 5, 2], [3, 6, 2], [3, 7, 6], [3, 0, 4], [3, 4, 7], [0, 1, 5], [0, 5, 4], [4, 5, 6], [4, 6, 7]]);
 
     } else if (mesh_mode == PYRAMID_MESH) {
@@ -207,7 +207,7 @@ function set_mesh(mode){
                 [vec4(1, 0, 0, 1), vec4(1, 0, 0, 1)],
                 [vec4(0, 1, 0, 1), vec4(0, 1, 0, 1)],
                 [vec4(0, 0, 1, 1), vec4(0, 0, 1, 1)]
-                ],
+            ],
             [[0, 2, 1], [0, 3, 2], [0, 1, 3], [1, 2, 3]]
         );
     } else if (mesh_mode == TRIANGLE_MESH) {
@@ -217,10 +217,9 @@ function set_mesh(mode){
                 [vec4(0, 2, 0, 1), vec4(0, 1, 0, 1)],
                 [vec4(0, 0, 2, 1), vec4(0, 0, 1, 1)]
             ],
-            [[0,1,2]]
+            [[0, 1, 2]]
         );
     }
-
 
 
     init_mesh();
@@ -229,9 +228,9 @@ function set_mesh(mode){
 
 // Handles click on drawing mode menu.
 // Resets object points if mode changes.
-function mesh_mode_listener(){
+function mesh_mode_listener() {
 
-    if (mesh_mode == this.selectedIndex){
+    if (mesh_mode == this.selectedIndex) {
         return;
     }
 
@@ -241,7 +240,7 @@ function mesh_mode_listener(){
 
 }
 
-function subdivide_listener(){
+function subdivide_listener() {
 
     mesh.subdivide();
 
@@ -250,10 +249,10 @@ function subdivide_listener(){
 }
 
 // Install event listeners for UI elements.
-function init_listeners(){
+function init_listeners() {
 
     // Listen for mouse clicks.
-    canvas.addEventListener("click",mouse_click_listener);
+    canvas.addEventListener("click", mouse_click_listener);
     // Listen for clicks on the drawing mode menu.
     var view_menu = document.getElementById("ViewMode");
     view_menu.addEventListener("click", view_mode_listener);
@@ -266,15 +265,15 @@ function init_listeners(){
 }
 
 
-function init(){
+function init() {
 
     // Initialize WebGL.
     canvas = document.getElementById("gl-canvas");
     gl = WebGLUtils.setupWebGL(canvas);
-    if (!gl){
+    if (!gl) {
         alert("WebGL isn't available");
     }
-    gl.viewport(0,0,canvas.width, canvas.height);
+    gl.viewport(0, 0, canvas.width, canvas.height);
     gl.clearColor(1.0, 1.0, 1.0, 1.0);
     gl.enable(gl.DEPTH_TEST);
     //gl.enable(gl.CULL_FACE);
