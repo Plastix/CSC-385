@@ -13,7 +13,7 @@ class Vertex {
         this.pos = scale(s, this.pos);
         this.color = scale(s, this.color);
 
-        for (var i = 0; i < verts.length; i++) {
+        for (let i = 0; i < verts.length; i++) {
             this.pos = add(this.pos, scale(weights[i], verts[i].pos));
             this.color = add(this.color, scale(weights[i], verts[i].color));
         }
@@ -51,11 +51,12 @@ class Face {
 
         if (this.flag <= flag) {
 
-            var e = this.edge;
+            let i;
+            let e = this.edge;
 
             this.flag = flag + 1;
 
-            for (var i = 0; i < 3; i++) {
+            for (i = 0; i < 3; i++) {
                 pos.push(e.head.pos);
                 color.push(e.head.color);
                 e.head.odd = false;
@@ -66,7 +67,7 @@ class Face {
                 e = e.next;
             }
 
-            for (var i = 0; i < 3; i++) {
+            for (i = 0; i < 3; i++) {
                 if (e.twin != null)
                     e.twin.face.fill_arrays(flag, pos, color);
                 e = e.next;
@@ -95,15 +96,16 @@ class Mesh {
 
         this.root_face = null;
 
-        var verts = new Array(vertex_array.length);
+        let verts = new Array(vertex_array.length);
 
         // Arrays to store edges to twin.
-        var twins = new Array(vertex_array.length);
+        let twins = new Array(vertex_array.length);
 
         // Convert vertex array to objects.
-        for (var i = 0; i < vertex_array.length; i++) {
+        let i;
+        for (i = 0; i < vertex_array.length; i++) {
 
-            var new_v = new Vertex();
+            let new_v = new Vertex();
             new_v.pos = vertex_array[i][0];
             new_v.color = vertex_array[i][1];
             new_v.odd = false;
@@ -114,17 +116,18 @@ class Mesh {
         }
 
         // Convert face array to objects.
-        for (var i = 0; i < face_array.length; i++) {
-            var face = face_array[i];
+        let j;
+        for (i = 0; i < face_array.length; i++) {
+            let face = face_array[i];
 
-            var new_face = new Face(null);
-            var edges = [];
-            for (var j = 0; j < 3; j++) {
-                var new_edge = new Edge(verts[face[(j + 1) % 3]], verts[face[j]], null, null, null, new_face);
+            let new_face = new Face(null);
+            let edges = [];
+            for (j = 0; j < 3; j++) {
+                let new_edge = new Edge(verts[face[(j + 1) % 3]], verts[face[j]], null, null, null, new_face);
                 twins[Math.min(face[j], face[(j + 1) % 3])].push([Math.max(face[j], face[(j + 1) % 3]), new_edge]);
                 edges.push(new_edge);
             }
-            for (var j = 0; j < 3; j++) {
+            for (j = 0; j < 3; j++) {
                 edges[j].next = edges[(j + 1) % 3];
                 edges[(j + 1) % 3].prev = edges[j];
             }
@@ -135,19 +138,19 @@ class Mesh {
         }
 
         // Glue the faces together by setting twin edges.
-        for (var i = 0; i < twins.length; i++) {
+        for (i = 0; i < twins.length; i++) {
 
             twins[i].sort(function (a, b) {
                 return a[0] <= b[0];
             });
 
-            var j = 0;
+            j = 0;
 
             while (j < twins[i].length) {
 
                 if ((j + 1) < twins[i].length) {
 
-                    if (twins[i][j][0] == twins[i][j + 1][0]) {
+                    if (twins[i][j][0] === twins[i][j + 1][0]) {
                         twins[i][j][1].twin = twins[i][j + 1][1];
                         twins[i][j + 1][1].twin = twins[i][j][1];
                         j++;
