@@ -95,8 +95,11 @@ class Mesh {
         this.root_face = null;
         this.verts = new Array(vertex_array.length);
         this.twins = new Array(vertex_array.length);  // Arrays to store edges to twin.
+        this.faces = new Array(face_array.length);
         this.setup_vertices(vertex_array);
         this.setup_faces(face_array);
+        this.poses = [];
+        this.colors = [];
 
         // Fill the arrays now that construction is complete.
         this.fill_arrays();
@@ -123,10 +126,10 @@ class Mesh {
             let edges = [];
 
             for (let j = 0; j < 3; j++) {
-                let current_face = face[j];
-                let next_face = face[(j + 1) % 3];
-                let new_edge = new Edge(this.verts[next_face], this.verts[current_face], null, null, null, new_face);
-                this.twins[Math.min(current_face, next_face)].push([Math.max(current_face, next_face), new_edge]);
+                let vertex_index = face[j];
+                let next_vertex_index = face[(j + 1) % 3];
+                let new_edge = new Edge(this.verts[next_vertex_index], this.verts[vertex_index], null, null, null, new_face);
+                this.twins[Math.min(vertex_index, next_vertex_index)].push([Math.max(vertex_index, next_vertex_index), new_edge]);
                 edges.push(new_edge);
             }
             for (let j = 0; j < 3; j++) {
@@ -136,6 +139,7 @@ class Mesh {
             }
 
             new_face.edge = edges[0];
+            this.faces[i] = new_face;
             this.root_face = new_face; // Root is last face created.
         }
 
@@ -170,8 +174,6 @@ class Mesh {
      * Called automatically in the constructor of the Mesh. You should not call this manually.
      */
     fill_arrays() {
-        this.poses = [];
-        this.colors = [];
         this.root_face.fill_arrays(this.root_face.flag, this.poses, this.colors);
     }
 
