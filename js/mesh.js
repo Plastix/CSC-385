@@ -92,43 +92,44 @@ class Mesh {
      * Assumes that the orientations of the faces are consistent with each other.
      */
     constructor(vertex_array, face_array) {
-
         this.root_face = null;
+        this.verts = new Array(vertex_array.length);
+        this.twins = new Array(vertex_array.length);  // Arrays to store edges to twin.
+        this.setup_vertices(vertex_array);
+        this.setup_faces(face_array);
 
-        let verts = new Array(vertex_array.length);
+        // Fill the arrays now that construction is complete.
+        this.fill_arrays();
+    }
 
-        // Arrays to store edges to twin.
-        let twins = new Array(vertex_array.length);
-
-        // Convert vertex array to objects.
-        let i;
-        for (i = 0; i < vertex_array.length; i++) {
-
+    // Convert vertex array to objects.
+    setup_vertices(vertex_array) {
+        for (let i = 0; i < vertex_array.length; i++) {
             let new_v = new Vertex();
             new_v.pos = vertex_array[i][0];
             new_v.color = vertex_array[i][1];
             new_v.odd = false;
             new_v.flag = 0;
-            verts[i] = new_v;
-            twins[i] = [];
-
+            this.verts[i] = new_v;
+            this.twins[i] = [];
         }
+    }
 
-        // Convert face array to objects.
-        let j;
-        for (i = 0; i < face_array.length; i++) {
+    // Convert face array to objects.
+    setup_faces(face_array) {
+        for (let i = 0; i < face_array.length; i++) {
             let face = face_array[i];
             let new_face = new Face(null);
             let edges = [];
 
-            for (j = 0; j < 3; j++) {
+            for (let j = 0; j < 3; j++) {
                 let current_face = face[j];
                 let next_face = face[(j + 1) % 3];
-                let new_edge = new Edge(verts[next_face], verts[current_face], null, null, null, new_face);
-                twins[Math.min(current_face, next_face)].push([Math.max(current_face, next_face), new_edge]);
+                let new_edge = new Edge(this.verts[next_face], this.verts[current_face], null, null, null, new_face);
+                this.twins[Math.min(current_face, next_face)].push([Math.max(current_face, next_face), new_edge]);
                 edges.push(new_edge);
             }
-            for (j = 0; j < 3; j++) {
+            for (let j = 0; j < 3; j++) {
                 let next_index = (j + 1) % 3;
                 edges[j].next = edges[next_index];
                 edges[next_index].prev = edges[j];
@@ -139,28 +140,24 @@ class Mesh {
         }
 
         // Glue the faces together by setting twin edges.
-        for (i = 0; i < twins.length; i++) {
-            twins[i].sort(function (a, b) {
+        for (let i = 0; i < this.twins.length; i++) {
+            this.twins[i].sort(function (a, b) {
                 return a[0] <= b[0];
             });
 
-            j = 0;
-            while (j < twins[i].length) {
-                if ((j + 1) < twins[i].length) {
+            let j = 0;
+            while (j < this.twins[i].length) {
+                if ((j + 1) < this.twins[i].length) {
 
-                    if (twins[i][j][0] === twins[i][j + 1][0]) {
-                        twins[i][j][1].twin = twins[i][j + 1][1];
-                        twins[i][j + 1][1].twin = twins[i][j][1];
+                    if (this.twins[i][j][0] === this.twins[i][j + 1][0]) {
+                        this.twins[i][j][1].twin = this.twins[i][j + 1][1];
+                        this.twins[i][j + 1][1].twin = this.twins[i][j][1];
                         j++;
                     }
                 }
                 j++;
             }
         }
-
-        // Fill the arrays now that construction is complete.
-        this.fill_arrays();
-
     }
 
     // TODO (Aidan) Implement me
