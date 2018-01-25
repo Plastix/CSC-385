@@ -38,7 +38,7 @@ class Edge {
         this.head = head;
         this.tail = tail;
         this.next = next;
-        this.prev = prev;
+        this.prev = prev; // This really isn't needed since edge.prev = edge.next.next
         this.twin = twin;
         this.face = face;
     }
@@ -90,9 +90,10 @@ class Mesh {
      */
     setup_vertices(vertex_array) {
         for (let i = 0; i < vertex_array.length; i++) {
+            let vertex = vertex_array[i];
             let new_vertex = new Vertex();
-            new_vertex.pos = vertex_array[i][0];
-            new_vertex.color = vertex_array[i][1];
+            new_vertex.pos = vertex[0];
+            new_vertex.color = vertex[1];
             new_vertex.odd = false;
             new_vertex.flag = 0;
             this.verts[i] = new_vertex;
@@ -115,8 +116,12 @@ class Mesh {
             for (let j = 0; j < 3; j++) {
                 let vertex_index = face[j];
                 let next_vertex_index = face[(j + 1) % 3];
-                let new_edge = new Edge(this.verts[next_vertex_index], this.verts[vertex_index], null, null, null, new_face);
-                this.twins[Math.min(vertex_index, next_vertex_index)].push([Math.max(vertex_index, next_vertex_index), new_edge]);
+                let new_edge = new Edge(this.verts[next_vertex_index], this.verts[vertex_index], null, null,
+                    null, new_face);
+
+                let min_vertex_index = Math.min(vertex_index, next_vertex_index);
+                let max_vertex_index = Math.max(vertex_index, next_vertex_index);
+                this.twins[min_vertex_index].push([max_vertex_index, new_edge]); // add (vertex, edge) to twin list
                 edges.push(new_edge);
             }
 
@@ -133,7 +138,7 @@ class Mesh {
 
         // Glue the faces together by setting twin edges.
         for (let i = 0; i < this.twins.length; i++) {
-            this.twins[i].sort(function (a, b) {
+            this.twins[i].sort(function (a, b) { // Sort twins by vertex index
                 return a[0] <= b[0];
             });
 
@@ -154,7 +159,7 @@ class Mesh {
 
     // TODO (Aidan) Implement me
     subdivide() {
-        // IMPLEMENT ME!!!  
+        // IMPLEMENT ME!!!
     }
 
     /**
