@@ -105,9 +105,11 @@ class Mesh {
     constructor(vertex_array, face_array) {
         this.verts = new Array(vertex_array.length);
         this.faces = new Array(face_array.length);
-        this.twins = new Array(vertex_array.length);  // List used to process twins
+        this.edges = [];
         this.poses = [];
         this.colors = [];
+
+        this.twins = new Array(vertex_array.length);  // List used to process twins
 
         this.setup_vertices(vertex_array);
         this.setup_faces(face_array);
@@ -165,6 +167,7 @@ class Mesh {
 
             new_face.edge = edges[0];
             this.faces[i] = new_face;
+            this.edges = this.edges.concat(edges);
         }
 
         this.setup_twins();
@@ -176,15 +179,15 @@ class Mesh {
     setup_twins() {
         for (let i = 0; i < this.twins.length; i++) {
             let twinArray = this.twins[i];
-            twinArray.sort(function (a, b) { // Sort twins by vertex index
-                return a[0] <= b[0];
-            });
+            twinArray.sort((a, b) => a[0] <= b[0]); // Sort twins by vertex index
 
             for (let j = 0; j < twinArray.length; j++) {
                 if ((j + 1) < twinArray.length) {
-                    if (twinArray[j][0] === twinArray[j + 1][0]) {
-                        twinArray[j][1].twin = twinArray[j + 1][1];
-                        twinArray[j + 1][1].twin = twinArray[j][1];
+                    let one = twinArray[j];
+                    let two = twinArray[j + 1];
+                    if (one[0] === two[0]) {
+                        one[1].twin = two[1];
+                        two[1].twin = one[1];
                         j++;
                     }
                 }
