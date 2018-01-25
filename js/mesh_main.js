@@ -158,8 +158,8 @@ function view_mode_listener() {
 
 function init_mesh() {
 
-    var poses = mesh.get_pos();
-    var colors = mesh.get_color();
+    var poses = mesh.get_pos;
+    var colors = mesh.get_color;
 
     var line_poses = [];
     var line_colors = [];
