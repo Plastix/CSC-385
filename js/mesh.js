@@ -25,6 +25,15 @@ class Vertex {
  */
 class Edge {
 
+    /**
+     * Constructor for new edge.
+     * @param head Pointer to vertex that this half-edge points to.
+     * @param tail Pointer to vertex that is on the end of this half-edge.
+     * @param next Pointer to next half-edge in face.
+     * @param prev Pointer to previous half-edge in face.
+     * @param twin Pointer to twin of half-edge in Mesh.
+     * @param face Pointer to face that contains the current half-edge.
+     */
     constructor(head, tail, next, prev, twin, face) {
         this.head = head;
         this.tail = tail;
@@ -42,35 +51,6 @@ class Face {
 
     constructor(edge) {
         this.edge = edge;
-        this.flag = 0; // Used to track whether the face is visited.
-    }
-
-    fill_arrays(flag, pos, color) {
-
-        if (this.flag <= flag) {
-
-            let i;
-            let e = this.edge;
-
-            this.flag = flag + 1;
-
-            for (i = 0; i < 3; i++) {
-                pos.push(e.head.pos);
-                color.push(e.head.color);
-                e.head.odd = false;
-                e.head.flag = flag + 1;
-                e.tail.odd = false;
-                e.tail.flag = flag + 1;
-
-                e = e.next;
-            }
-
-            for (i = 0; i < 3; i++) {
-                if (e.twin != null)
-                    e.twin.face.fill_arrays(flag, pos, color);
-                e = e.next;
-            }
-        }
     }
 }
 
@@ -92,39 +72,46 @@ class Mesh {
      * Assumes that the orientations of the faces are consistent with each other.
      */
     constructor(vertex_array, face_array) {
-        this.root_face = null;
         this.verts = new Array(vertex_array.length);
-        this.twins = new Array(vertex_array.length);  // Arrays to store edges to twin.
         this.faces = new Array(face_array.length);
-        this.setup_vertices(vertex_array);
-        this.setup_faces(face_array);
+        this.twins = new Array(vertex_array.length);  // Arrays to store edges to twin.
         this.poses = [];
         this.colors = [];
 
-        // Fill the arrays now that construction is complete.
-        this.fill_arrays();
+        this.setup_vertices(vertex_array);
+        this.setup_faces(face_array);
+        this.fill_arrays(); // Fill the arrays now that construction is complete.
     }
 
-    // Convert vertex array to objects.
+    /**
+     * Convert vertex array to objects.
+     * This is called automatically from the constructor.
+     * @param vertex_array Array of vertices from constructor.
+     */
     setup_vertices(vertex_array) {
         for (let i = 0; i < vertex_array.length; i++) {
-            let new_v = new Vertex();
-            new_v.pos = vertex_array[i][0];
-            new_v.color = vertex_array[i][1];
-            new_v.odd = false;
-            new_v.flag = 0;
-            this.verts[i] = new_v;
+            let new_vertex = new Vertex();
+            new_vertex.pos = vertex_array[i][0];
+            new_vertex.color = vertex_array[i][1];
+            new_vertex.odd = false;
+            new_vertex.flag = 0;
+            this.verts[i] = new_vertex;
             this.twins[i] = [];
         }
     }
 
-    // Convert face array to objects.
+    /**
+     * Convert face array to objects.
+     * This is called automatically from the constructor.
+     * @param face_array Array of faces from constructor.
+     */
     setup_faces(face_array) {
         for (let i = 0; i < face_array.length; i++) {
             let face = face_array[i];
             let new_face = new Face(null);
             let edges = [];
 
+            // Construct the half edges of the face (three of them)
             for (let j = 0; j < 3; j++) {
                 let vertex_index = face[j];
                 let next_vertex_index = face[(j + 1) % 3];
@@ -132,6 +119,8 @@ class Mesh {
                 this.twins[Math.min(vertex_index, next_vertex_index)].push([Math.max(vertex_index, next_vertex_index), new_edge]);
                 edges.push(new_edge);
             }
+
+            // Setup edge pointers (next/prev)
             for (let j = 0; j < 3; j++) {
                 let next_index = (j + 1) % 3;
                 edges[j].next = edges[next_index];
@@ -140,7 +129,6 @@ class Mesh {
 
             new_face.edge = edges[0];
             this.faces[i] = new_face;
-            this.root_face = new_face; // Root is last face created.
         }
 
         // Glue the faces together by setting twin edges.
@@ -166,15 +154,27 @@ class Mesh {
 
     // TODO (Aidan) Implement me
     subdivide() {
-        // IMPLEMENT ME!!!
+        // IMPLEMENT ME!!!  
     }
 
     /**
-     * Fill in the poses and colors arrays of the mesh.
+     * Fill in the poses and colors arrays of the mesh. This method loops over every face and then every
+     * edge of every face adding positions and colors in that order.
+     *
      * Called automatically in the constructor of the Mesh. You should not call this manually.
      */
     fill_arrays() {
-        this.root_face.fill_arrays(this.root_face.flag, this.poses, this.colors);
+        for (let i = 0; i < this.faces.length; i++) {
+            let edge = this.faces[i].edge;
+            for (let i = 0; i < 3; i++) {
+                this.poses.push(edge.head.pos);
+                this.colors.push(edge.head.color);
+                edge.head.odd = false;
+                edge.tail.odd = false;
+
+                edge = edge.next;
+            }
+        }
     }
 
 
