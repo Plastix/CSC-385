@@ -74,7 +74,7 @@ class Mesh {
     constructor(vertex_array, face_array) {
         this.verts = new Array(vertex_array.length);
         this.faces = new Array(face_array.length);
-        this.twins = new Array(vertex_array.length);  // Arrays to store edges to twin.
+        this.twins = new Array(vertex_array.length);  // List used to process twins
         this.poses = [];
         this.colors = [];
 
@@ -96,7 +96,7 @@ class Mesh {
             new_vertex.color = vertex[1];
             new_vertex.odd = false;
             new_vertex.flag = 0;
-            this.verts[i] = new_vertex;
+            this.verts[i] = new_vertex; 
             this.twins[i] = [];
         }
     }
@@ -136,7 +136,13 @@ class Mesh {
             this.faces[i] = new_face;
         }
 
-        // Glue the faces together by setting twin edges.
+        this.setup_twins();
+    }
+
+    /**
+     * Glue the faces together by setting twin edges.
+     */
+    setup_twins() {
         for (let i = 0; i < this.twins.length; i++) {
             this.twins[i].sort(function (a, b) { // Sort twins by vertex index
                 return a[0] <= b[0];
@@ -176,12 +182,10 @@ class Mesh {
                 this.colors.push(edge.head.color);
                 edge.head.odd = false;
                 edge.tail.odd = false;
-
                 edge = edge.next;
             }
         }
     }
-
 
     /**
      * Returns the list of all vertices in the mesh
