@@ -52,6 +52,37 @@ class Face {
     constructor(edge) {
         this.edge = edge;
     }
+
+    /**
+     * Debugging method!!
+     * Checks whether the face object and its corresponding half-edges have been
+     * constructed properly. If not, errors will be logged in the console.
+     */
+    validate() {
+        let e = this.edge;
+        for (let i = 0; i < 3; i++) {
+            if (!e.face || e.face !== this) {
+                console.error("Incorrect edge set on face!", this);
+                return;
+            }
+
+            if (!e.head || !e.tail || !e.next || !e.prev) {
+                console.error("Half-edge pointers not set correctly!", this);
+                return;
+            }
+
+            if (e.prev !== e.next.next) {
+                console.error("Half-edge pointers not set correctly!", this);
+                return
+            }
+
+            if (e.head !== e.next.tail) {
+                console.error("Half-edge vertices do not match!", this);
+                return;
+            }
+            e = e.next;
+        }
+    }
 }
 
 /**
@@ -96,7 +127,7 @@ class Mesh {
             new_vertex.color = vertex[1];
             new_vertex.odd = false;
             new_vertex.flag = 0;
-            this.verts[i] = new_vertex; 
+            this.verts[i] = new_vertex;
             this.twins[i] = [];
         }
     }
@@ -144,21 +175,19 @@ class Mesh {
      */
     setup_twins() {
         for (let i = 0; i < this.twins.length; i++) {
-            this.twins[i].sort(function (a, b) { // Sort twins by vertex index
+            let twinArray = this.twins[i];
+            twinArray.sort(function (a, b) { // Sort twins by vertex index
                 return a[0] <= b[0];
             });
 
-            let j = 0;
-            while (j < this.twins[i].length) {
-                if ((j + 1) < this.twins[i].length) {
-
-                    if (this.twins[i][j][0] === this.twins[i][j + 1][0]) {
-                        this.twins[i][j][1].twin = this.twins[i][j + 1][1];
-                        this.twins[i][j + 1][1].twin = this.twins[i][j][1];
+            for (let j = 0; j < twinArray.length; j++) {
+                if ((j + 1) < twinArray.length) {
+                    if (twinArray[j][0] === twinArray[j + 1][0]) {
+                        twinArray[j][1].twin = twinArray[j + 1][1];
+                        twinArray[j + 1][1].twin = twinArray[j][1];
                         j++;
                     }
                 }
-                j++;
             }
         }
     }
@@ -176,7 +205,8 @@ class Mesh {
      */
     fill_arrays() {
         for (let i = 0; i < this.faces.length; i++) {
-            let edge = this.faces[i].edge;
+            let face = this.faces[i];
+            let edge = face.edge;
             for (let i = 0; i < 3; i++) {
                 this.poses.push(edge.head.pos);
                 this.colors.push(edge.head.color);
@@ -184,6 +214,8 @@ class Mesh {
                 edge.tail.odd = false;
                 edge = edge.next;
             }
+
+            face.validate();
         }
     }
 
