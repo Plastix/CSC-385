@@ -308,25 +308,25 @@ class Mesh {
             updated_verts.push(new_vertex);
 
             let boundary = false;
-            let original_edge = vertex.edge;
+            let original_edge = vertex.edge.next;
             let edge = original_edge;
             let neighbors = [];
 
             do {
-                if (!boundary) {
-                    edge = edge.next;
-                }
-
                 neighbors.push(edge.head);
                 if (edge.twin && !boundary) {
-                    edge = edge.twin;
+                    edge = edge.twin.next; // Traverse clock-wise
                 } else {
                     boundary = true;
-                    edge = edge.next.next.twin;
+                    let next = edge.next.next;
+                    edge = next.twin;
+
+                    if (!next.twin) { // Record last neighbor when traversing cc-w
+                        neighbors.push(next.tail);
+                    }
                 }
             }
             while (edge !== original_edge && edge !== null);
-
 
             if (boundary) {
                 // For boundary points only keep the first and last neighbors
