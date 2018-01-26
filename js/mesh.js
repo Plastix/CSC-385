@@ -284,7 +284,7 @@ class Mesh {
         this.verts.sort((v1, v2) => v1.index - v2.index);
         let vertex_array = [];
         for (let v of this.verts) {
-            vertex_array.push(v.pos);
+            vertex_array.push([v.pos, v.color]);
         }
         return vertex_array;
     }
