@@ -6,8 +6,8 @@ class Vertex {
     constructor() {
         this.pos = vec4();
         this.color = vec4();
-        this.flag = 0;
         this.index = -1; // index into vertices array
+        this.edge = null;
     }
 
     set_to_average(verts, weights, s) {
@@ -44,6 +44,8 @@ class Edge {
         this.face = face;
 
         this.odd = null; // Odd Vertex added to half-edge when sub-dividing
+
+        head.edge = this; // Update the vertex we're point to
     }
 }
 
@@ -205,10 +207,9 @@ class Mesh {
      * Implements Loop subdivision.
      */
     subdivide() {
-        // this.compute_vertex_adjustments();
         let new_vertices = this.add_odd_vertices();
         let face_array = this.create_face_array();
-        // this.adjust_vertices();
+        this.adjust_vertices();
         let vertex_array = this.create_vertex_array(new_vertices);
 
         // Re-create mesh
@@ -291,14 +292,60 @@ class Mesh {
         return vertex_array;
     }
 
-    // TODO (Aidan)
-    compute_vertex_adjustments() {
-
-    }
-
-    // TODO (Aidan)
+    /**
+     * Adjusts the position of all existing vertices according to the Loop subdivision scheme.
+     */
     adjust_vertices() {
+        let num_verts = this.verts.length;
+        let updated_verts = [];
 
+        for (let vertex of this.verts) {
+            // Create a new vertex for the one which we're about to process. We can't mutate our vertices otherwise
+            // it will mess up the weighting of other vertices yet to be processed
+            let new_vertex = new Vertex();
+            new_vertex.pos = vertex.pos;
+            new_vertex.color = vertex.color;
+            updated_verts.push(new_vertex);
+
+            let boundary = false;
+            let original_edge = vertex.edge;
+            let edge = original_edge;
+            let neighbors = [];
+
+            do {
+                if (!boundary) {
+                    edge = edge.next;
+                }
+
+                neighbors.push(edge.head);
+                if (edge.twin && !boundary) {
+                    edge = edge.twin;
+                } else {
+                    boundary = true;
+                    edge = edge.next.next.twin;
+                }
+            }
+            while (edge !== original_edge && edge !== null);
+
+
+            if (boundary) {
+                // For boundary points only keep the first and last neighbors
+                neighbors = [neighbors[0], neighbors[neighbors.length - 1]];
+                new_vertex.set_to_average(neighbors, [1 / 8, 1 / 8], 3 / 4);
+            } else {
+                let num_neighbors = neighbors.length;
+                let beta = (num_neighbors <= 3) ? 3 / 16 : (3 / (8 * num_neighbors));
+                new_vertex.set_to_average(neighbors, Array(num_neighbors).fill(beta), (1 - num_neighbors * beta));
+            }
+        }
+
+        // Update vertex positions once every vertex has been processed
+        for (let i = 0; i < num_verts; i++) {
+            let old_vertex = this.verts[i];
+            let new_vertex = updated_verts[i];
+            old_vertex.pos = new_vertex.pos; // This will break our pointers
+            old_vertex.color = new_vertex.color;
+        }
     }
 
     /**
