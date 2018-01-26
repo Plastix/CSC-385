@@ -7,6 +7,7 @@ class Vertex {
         this.pos = vec4();
         this.color = vec4();
         this.flag = 0;
+        this.index = -1; // index into vertices array
     }
 
     set_to_average(verts, weights, s) {
@@ -41,6 +42,8 @@ class Edge {
         this.prev = prev; // This really isn't needed since edge.prev = edge.next.next
         this.twin = twin;
         this.face = face;
+
+        this.odd = null; // Odd Vertex added to half-edge when sub-dividing
     }
 }
 
@@ -129,6 +132,7 @@ class Mesh {
             new_vertex.color = vertex[1];
             new_vertex.odd = false;
             new_vertex.flag = 0;
+            new_vertex.index = i;
             this.verts[i] = new_vertex;
             this.twins[i] = [];
         }
@@ -197,8 +201,81 @@ class Mesh {
 
     // TODO (Aidan) Implement me
     subdivide() {
-        // IMPLEMENT ME!!!
+        // this.compute_vertex_adjustments();
+        this.add_odd_vertices();
+        // let face_array = this.create_face_array();
+        // let vertex_array = this.create_vertex_array();
+        // this.adjust_vertices();
+
+        // Re-create mesh
+        // this.constructor(vertex_array, face_array)
     }
+
+    /**
+     * Notes to myself
+     * 1. Loop over all faces and then over all edges of the face
+     * 2. Add odd vertex to each edge and make sure its twin also gets same vertex
+     * 3. Add vertex to vertices list ad end making sure to save correct index inside of vertex object
+     */
+    add_odd_vertices() {
+        let vertex_index = this.verts.length;
+
+        for (let i = 0; i < this.faces.length; i++) {
+            let face = this.faces[i];
+            let e = face.edge;
+            for (let j = 0; j < 3; j++) {
+
+                if (!e.odd) { // Add a vertex if we don't have one set yet
+                    let new_vertex = Vertex();
+                    new_vertex.index = vertex_index;
+                    this.verts.push(new_vertex);
+                    vertex_index++;
+
+                    if (e.twin) { // Not a boundary edge
+
+                    } else {
+
+                    }
+
+
+                }
+
+
+                e = e.next;
+            }
+        }
+    }
+
+    // TODO (Aidan)
+    /**
+     * Notes to myself:
+     * 1. Loop over all faces and then over all edges of the face
+     * 2. Generate new face arrays [index, index2, index3] by connecting odd vertices on edges
+     */
+    create_face_array() {
+
+    }
+
+    // TODO (Aidan)
+    /**
+     * Notes to myself:
+     * Vertices now have their index stored in them. When we subdivide, we add new vertices to the end of the
+     * current vertices list. We need to sort these (new) vertices by index then return that list of vec4.
+     */
+    create_vertex_array() {
+
+    }
+
+    // TODO (Aidan)
+    compute_vertex_adjustments() {
+
+    }
+
+    // TODO (Aidan)
+    adjust_vertices() {
+
+    }
+
 
     /**
      * Fill in the poses and colors arrays of the mesh. This method loops over every face and then every
