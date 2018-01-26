@@ -106,6 +106,10 @@ class Mesh {
      * Assumes that the orientations of the faces are consistent with each other.
      */
     constructor(vertex_array, face_array) {
+        this.setup_mesh(vertex_array, face_array);
+    }
+
+    setup_mesh(vertex_array, face_array) {
         this.verts = new Array(vertex_array.length);
         this.faces = new Array(face_array.length);
         this.edges = [];
@@ -203,12 +207,12 @@ class Mesh {
     subdivide() {
         // this.compute_vertex_adjustments();
         this.add_odd_vertices();
-        // let face_array = this.create_face_array();
-        // let vertex_array = this.create_vertex_array();
+        let face_array = this.create_face_array();
+        let vertex_array = this.create_vertex_array();
         // this.adjust_vertices();
 
         // Re-create mesh
-        // this.constructor(vertex_array, face_array)
+        this.setup_mesh(vertex_array, face_array);
     }
 
     /**
@@ -223,23 +227,25 @@ class Mesh {
         for (let i = 0; i < this.faces.length; i++) {
             let face = this.faces[i];
             let e = face.edge;
-            for (let j = 0; j < 3; j++) {
 
-                if (!e.odd) { // Add a vertex if we don't have one set yet
-                    let new_vertex = Vertex();
+            for (let j = 0; j < 3; j++) {
+                // Add a vertex if we don't have one set yet
+                if (!e.odd) {
+                    let new_vertex = new Vertex();
+                    e.odd = new_vertex;
                     new_vertex.index = vertex_index;
                     this.verts.push(new_vertex);
                     vertex_index++;
 
-                    if (e.twin) { // Not a boundary edge
-
+                    // Not a boundary edge
+                    if (e.twin) {
+                        new_vertex.set_to_average([e.head, e.tail, e.next.head, e.twin.next.head],
+                            [3 / 8, 3 / 8, 1 / 8, 1 / 8], 0);
+                        e.twin.odd = new_vertex; // Update our twin's vertex
                     } else {
-
+                        new_vertex.set_to_average([e.head, e.tail], [1 / 2, 1 / 2], 0);
                     }
-
-
                 }
-
 
                 e = e.next;
             }
@@ -253,7 +259,18 @@ class Mesh {
      * 2. Generate new face arrays [index, index2, index3] by connecting odd vertices on edges
      */
     create_face_array() {
+        let face_array = [];
 
+        for (let face of this.faces) {
+            let e = face.edge;
+            for (let i = 0; i < 3; i++) {
+                face_array.push([e.odd.index, e.head.index, e.next.odd.index]);
+                e = e.next;
+            }
+            face_array.push([e.odd.index, e.next.odd.index, e.next.next.odd.index])
+        }
+
+        return face_array;
     }
 
     // TODO (Aidan)
@@ -263,7 +280,13 @@ class Mesh {
      * current vertices list. We need to sort these (new) vertices by index then return that list of vec4.
      */
     create_vertex_array() {
-
+        // Sort vertices in ascending order by index
+        this.verts.sort((v1, v2) => v1.index - v2.index);
+        let vertex_array = [];
+        for (let v of this.verts) {
+            vertex_array.push(v.pos);
+        }
+        return vertex_array;
     }
 
     // TODO (Aidan)
