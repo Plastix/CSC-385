@@ -3,13 +3,23 @@
  */
 class Vertex {
 
+    /**
+     * Constructor for creating a new Vertex.
+     */
     constructor() {
         this.pos = vec4();
         this.color = vec4();
-        this.index = -1; // index into vertices array
-        this.edge = null;
+        this.index = -1; // Our index into the Vertices array
+        this.edge = null; // Half-edge that is point to us
     }
 
+    /**
+     * Sets the position and color of this vertex to a linear combination of the parameter's
+     * vertices and weights.
+     * @param verts Array other
+     * @param weights Array of weights corresponding to the weight of each vertex in verts.
+     * @param s Weight of this vertex.
+     */
     set_to_average(verts, weights, s) {
         this.pos = scale(s, this.pos);
         this.color = scale(s, this.color);
@@ -31,20 +41,17 @@ class Edge {
      * @param head Pointer to vertex that this half-edge points to.
      * @param tail Pointer to vertex that is on the end of this half-edge.
      * @param next Pointer to next half-edge in face.
-     * @param prev Pointer to previous half-edge in face.
      * @param twin Pointer to twin of half-edge in Mesh.
      * @param face Pointer to face that contains the current half-edge.
      */
-    constructor(head, tail, next, prev, twin, face) {
+    constructor(head, tail, next, twin, face) {
         this.head = head;
         this.tail = tail;
         this.next = next;
-        this.prev = prev; // This really isn't needed since edge.prev = edge.next.next
         this.twin = twin;
         this.face = face;
 
         this.odd = null; // Odd Vertex added to half-edge when sub-dividing
-
         head.edge = this; // Update the vertex we're point to
     }
 }
@@ -71,12 +78,12 @@ class Face {
                 return;
             }
 
-            if (!e.head || !e.tail || !e.next || !e.prev) {
+            if (!e.head || !e.tail || !e.next) {
                 console.error("Half-edge pointers not set correctly!", this);
                 return;
             }
 
-            if (e.prev !== e.next.next) {
+            if (e !== e.next.next.next) {
                 console.error("Half-edge pointers not set correctly!", this);
                 return
             }
@@ -158,8 +165,7 @@ class Mesh {
             for (let j = 0; j < 3; j++) {
                 let vertex_index = face[j];
                 let next_vertex_index = face[(j + 1) % 3];
-                let new_edge = new Edge(this.verts[next_vertex_index], this.verts[vertex_index], null, null,
-                    null, new_face);
+                let new_edge = new Edge(this.verts[next_vertex_index], this.verts[vertex_index], null, null, new_face);
 
                 let min_vertex_index = Math.min(vertex_index, next_vertex_index);
                 let max_vertex_index = Math.max(vertex_index, next_vertex_index);
@@ -167,11 +173,10 @@ class Mesh {
                 edges.push(new_edge);
             }
 
-            // Setup edge pointers (next/prev)
+            // Setup edge pointers
             for (let j = 0; j < 3; j++) {
                 let next_index = (j + 1) % 3;
                 edges[j].next = edges[next_index];
-                edges[next_index].prev = edges[j];
             }
 
             new_face.edge = edges[0];
