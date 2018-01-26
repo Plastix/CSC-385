@@ -115,10 +115,6 @@ class Mesh {
      * Assumes that the orientations of the faces are consistent with each other.
      */
     constructor(vertex_array, face_array) {
-        this.setup_mesh(vertex_array, face_array);
-    }
-
-    setup_mesh(vertex_array, face_array) {
         this.verts = new Array(vertex_array.length);
         this.faces = new Array(face_array.length);
         this.edges = [];
@@ -217,8 +213,7 @@ class Mesh {
         this.adjust_vertices();
         let vertex_array = this.create_vertex_array(new_vertices);
 
-        // Re-create mesh
-        this.setup_mesh(vertex_array, face_array);
+        return new Mesh(vertex_array, face_array);
     }
 
     /**
@@ -292,7 +287,8 @@ class Mesh {
     create_vertex_array(new_vertices) {
         let vertex_array = [];
         for (let v of this.verts.concat(new_vertices)) {
-            vertex_array.push([v.pos, v.color]);
+            // Copy vec4() so we don't have any links to old vertices
+            vertex_array.push([vec4(v.pos), vec4(v.color)]);
         }
         return vertex_array;
     }
@@ -308,8 +304,8 @@ class Mesh {
             // Create a new vertex for the one which we're about to process. We can't mutate our vertices otherwise
             // it will mess up the weighting of other vertices yet to be processed
             let new_vertex = new Vertex();
-            new_vertex.pos = vec4(vertex.pos);
-            new_vertex.color = vec4(vertex.color);
+            new_vertex.pos = vertex.pos;
+            new_vertex.color = vertex.color;
             updated_verts.push(new_vertex);
 
             if (Mesh.is_boundary_vertex(vertex)) {
@@ -434,5 +430,20 @@ class Mesh {
      */
     get get_color() {
         return this.colors;
+    }
+
+    /**
+     * Returns a new deep clone of the current Mesh.
+     * @returns {Mesh}
+     */
+    copy() {
+        let face_array = [];
+
+        for (let face of this.faces) {
+            let e = face.edge;
+            face_array.push([e.index, e.next.index, e.next.next.index]); // cc-w
+        }
+
+        return new Mesh(this.create_vertex_array([]), face_array);
     }
 }

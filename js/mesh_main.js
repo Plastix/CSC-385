@@ -242,7 +242,7 @@ function mesh_mode_listener() {
 
 function subdivide_listener() {
 
-    mesh.subdivide();
+    mesh = mesh.subdivide();
 
     init_mesh();
 
