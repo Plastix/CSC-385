@@ -134,7 +134,6 @@ class Mesh {
             let new_vertex = new Vertex();
             new_vertex.pos = vertex[0];
             new_vertex.color = vertex[1];
-            new_vertex.odd = false;
             new_vertex.flag = 0;
             new_vertex.index = i;
             this.verts[i] = new_vertex;
@@ -185,8 +184,7 @@ class Mesh {
      * Glue the faces together by setting twin edges.
      */
     setup_twins() {
-        for (let i = 0; i < this.twins.length; i++) {
-            let twinArray = this.twins[i];
+        for (let twinArray of this.twins) {
             twinArray.sort((a, b) => a[0] <= b[0]); // Sort twins by vertex index
 
             for (let j = 0; j < twinArray.length; j++) {
@@ -203,38 +201,39 @@ class Mesh {
         }
     }
 
-    // TODO (Aidan) Implement me
+    /**
+     * Implements Loop subdivision.
+     */
     subdivide() {
         // this.compute_vertex_adjustments();
-        this.add_odd_vertices();
+        let new_vertices = this.add_odd_vertices();
         let face_array = this.create_face_array();
-        let vertex_array = this.create_vertex_array();
         // this.adjust_vertices();
+        let vertex_array = this.create_vertex_array(new_vertices);
 
         // Re-create mesh
         this.setup_mesh(vertex_array, face_array);
     }
 
     /**
-     * Notes to myself
-     * 1. Loop over all faces and then over all edges of the face
-     * 2. Add odd vertex to each edge and make sure its twin also gets same vertex
-     * 3. Add vertex to vertices list ad end making sure to save correct index inside of vertex object
+     * First step in Loop subdivision scheme. We add a single odd vertex to each half edge. These odd edges will be
+     * glued together into faces by create_face_array(). When setting an odd vertex to a half edge, also make sure to
+     * set the odd vertex on its twin.
+     * @returns {Array} Array of new Vertex objects that have been created.
      */
     add_odd_vertices() {
-        let vertex_index = this.verts.length;
+        let vertex_index = this.verts.length; // Index of new vertices starts at our current length
+        let new_vertices = [];
 
-        for (let i = 0; i < this.faces.length; i++) {
-            let face = this.faces[i];
+        for (let face of this.faces) {
             let e = face.edge;
-
             for (let j = 0; j < 3; j++) {
                 // Add a vertex if we don't have one set yet
                 if (!e.odd) {
                     let new_vertex = new Vertex();
                     e.odd = new_vertex;
                     new_vertex.index = vertex_index;
-                    this.verts.push(new_vertex);
+                    new_vertices.push(new_vertex);
                     vertex_index++;
 
                     // Not a boundary edge
@@ -250,40 +249,43 @@ class Mesh {
                 e = e.next;
             }
         }
+
+        // Sort new vertices in ascending order by index
+        new_vertices.sort((v1, v2) => v1.index - v2.index);
+        return new_vertices;
     }
 
-    // TODO (Aidan)
     /**
-     * Notes to myself:
-     * 1. Loop over all faces and then over all edges of the face
-     * 2. Generate new face arrays [index, index2, index3] by connecting odd vertices on edges
+     * Creates an array of faces [index1, index2, index3] from the given mesh after subdividing.
+     * This method assumings you have called add_odd_vertices() beforehand to set odd vertices.
+     * @returns {Array} Array of vertex indexes.
      */
     create_face_array() {
         let face_array = [];
-
         for (let face of this.faces) {
             let e = face.edge;
+
+            // Add outer triangle faces
             for (let i = 0; i < 3; i++) {
-                face_array.push([e.odd.index, e.head.index, e.next.odd.index]);
+                face_array.push([e.odd.index, e.head.index, e.next.odd.index]); // cc-w
                 e = e.next;
             }
-            face_array.push([e.odd.index, e.next.odd.index, e.next.next.odd.index])
+            // Add inner triangle face
+            face_array.push([e.odd.index, e.next.odd.index, e.next.next.odd.index]) // cc-w
         }
 
         return face_array;
     }
 
-    // TODO (Aidan)
     /**
-     * Notes to myself:
-     * Vertices now have their index stored in them. When we subdivide, we add new vertices to the end of the
-     * current vertices list. We need to sort these (new) vertices by index then return that list of vec4.
+     * Creates an array of vertices from the given mesh and the added new_vertices.
+     * This method assume that the order of this.verts has remained unchanged since mesh init.
+     * @param new_vertices Array of new vertices created by add_odd_vertices()
+     * @returns {Array} Mesh array of vertices [pos, color]
      */
-    create_vertex_array() {
-        // Sort vertices in ascending order by index
-        this.verts.sort((v1, v2) => v1.index - v2.index);
+    create_vertex_array(new_vertices) {
         let vertex_array = [];
-        for (let v of this.verts) {
+        for (let v of this.verts.concat(new_vertices)) {
             vertex_array.push([v.pos, v.color]);
         }
         return vertex_array;
@@ -299,7 +301,6 @@ class Mesh {
 
     }
 
-
     /**
      * Fill in the poses and colors arrays of the mesh. This method loops over every face and then every
      * edge of every face adding positions and colors in that order.
@@ -307,17 +308,13 @@ class Mesh {
      * Called automatically in the constructor of the Mesh. You should not call this manually.
      */
     fill_arrays() {
-        for (let i = 0; i < this.faces.length; i++) {
-            let face = this.faces[i];
+        for (let face of this.faces) {
             let edge = face.edge;
             for (let i = 0; i < 3; i++) {
                 this.poses.push(edge.head.pos);
                 this.colors.push(edge.head.color);
-                edge.head.odd = false;
-                edge.tail.odd = false;
                 edge = edge.next;
             }
-
             face.validate();
         }
     }
