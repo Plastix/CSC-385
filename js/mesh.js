@@ -308,36 +308,15 @@ class Mesh {
             // Create a new vertex for the one which we're about to process. We can't mutate our vertices otherwise
             // it will mess up the weighting of other vertices yet to be processed
             let new_vertex = new Vertex();
-            new_vertex.pos = vertex.pos;
-            new_vertex.color = vertex.color;
+            new_vertex.pos = vec4(vertex.pos);
+            new_vertex.color = vec4(vertex.color);
             updated_verts.push(new_vertex);
 
-            let boundary = false;
-            let original_edge = vertex.edge.next;
-            let edge = original_edge;
-            let neighbors = [];
-
-            do {
-                neighbors.push(edge.head);
-                if (edge.twin && !boundary) {
-                    edge = edge.twin.next; // Traverse clock-wise
-                } else {
-                    boundary = true;
-                    let next = edge.next.next;
-                    edge = next.twin;
-
-                    if (!next.twin) { // Record last neighbor when traversing cc-w
-                        neighbors.push(next.tail);
-                    }
-                }
-            }
-            while (edge !== original_edge && edge !== null);
-
-            if (boundary) {
-                // For boundary points only keep the first and last neighbors
-                neighbors = [neighbors[0], neighbors[neighbors.length - 1]];
+            if (Mesh.is_boundary_vertex(vertex)) {
+                let neighbors = Mesh.get_boundary_neighbors(vertex);
                 new_vertex.set_to_average(neighbors, [1 / 8, 1 / 8], 3 / 4);
             } else {
+                let neighbors = Mesh.get_interior_neighbors(vertex);
                 let num_neighbors = neighbors.length;
                 let beta = (num_neighbors <= 3) ? 3 / 16 : (3 / (8 * num_neighbors));
                 new_vertex.set_to_average(neighbors, Array(num_neighbors).fill(beta), (1 - num_neighbors * beta));
@@ -348,9 +327,79 @@ class Mesh {
         for (let i = 0; i < num_verts; i++) {
             let old_vertex = this.verts[i];
             let new_vertex = updated_verts[i];
-            old_vertex.pos = new_vertex.pos; // This will break our pointers
+            // This will break our pointers but we're recreating our mesh afterward.  ¯\_(ツ)_/¯
+            old_vertex.pos = new_vertex.pos;
             old_vertex.color = new_vertex.color;
         }
+    }
+
+    /**
+     * Returns the neighboring vertices of the specified interior vertex. Call is_boundary_vertex() before
+     * this method!
+     * @param vertex An interior vertex.
+     * @returns {Array} Array of neighboring vertices.
+     */
+    static get_interior_neighbors(vertex) {
+        let neighbors = [];
+        let edge = vertex.edge;
+        // noinspection UnnecessaryLocalVariableJS
+        let original = edge;
+        do {
+            edge = edge.next.twin;
+            neighbors.push(edge.tail);
+        } while (edge !== original);
+        return neighbors;
+    }
+
+    /**
+     * Returns the neighbors of the specified boundary vertex. Call is_boundary_vertex() before this method!
+     * @param vertex A boundary vertex.
+     * @returns {Array} Array of 2 neighboring vertices.
+     */
+    static get_boundary_neighbors(vertex) {
+        let neighbors = [];
+        let iter = vertex.edge;
+        do { // Sweep clock-wise until border
+            iter = iter.next;
+            if (!iter.twin) {
+                neighbors.push(iter.head);
+                break;
+            }
+            iter = iter.twin;
+        } while (iter !== null);
+
+        iter = vertex.edge;
+        do { // Sweep counter-clock-wise until border
+            if (!iter.twin) {
+                neighbors.push(iter.tail);
+                break;
+            }
+            iter = iter.twin.next.next;
+        } while (iter !== null);
+
+        return neighbors;
+    }
+
+    /**
+     * Returns whether the given vertex is a boundary vertex. That is, it is connected to a half edge with no twin.
+     * @param vertex Vertex to check.
+     * @returns {boolean} True if boundary vertex, else false.
+     */
+    static is_boundary_vertex(vertex) {
+        let boundary = false;
+        let edge = vertex.edge;
+        // noinspection UnnecessaryLocalVariableJS
+        let original = edge;
+        do {
+            edge = edge.next;
+            if (!edge.twin) {
+                boundary = true;
+                break;
+            } else {
+                edge = edge.twin;
+            }
+        } while (edge !== original);
+        return boundary;
     }
 
     /**
