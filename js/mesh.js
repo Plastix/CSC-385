@@ -10,7 +10,7 @@ class Vertex {
         this.pos = vec4();
         this.color = vec4();
         this.index = -1; // Our index into the Vertices array
-        this.edge = null; // Half-edge that is point to us
+        this.edge = null; // Half-edge that is pointing to us
     }
 
     /**
@@ -52,6 +52,7 @@ class Edge {
         this.face = face;
 
         this.odd = null; // Odd Vertex added to half-edge when sub-dividing
+        this.creased = false; // Determines creased behavior in loop subdivision.
         head.edge = this; // Update the vertex we're point to
     }
 }
@@ -111,10 +112,12 @@ class Mesh {
      * Each element of the face array is a face described by a length  three array
      * containing the indices of the vertices (into the first array that make up the face
      * (in that order).
+     * @param creased_edges Array of vertex pairs which determines whether an edge from [v1, v2] will be creased
+     * during the subdivision procedure.
      *
      * Assumes that the orientations of the faces are consistent with each other.
      */
-    constructor(vertex_array, face_array) {
+    constructor(vertex_array, face_array, creased_edges) {
         this.verts = new Array(vertex_array.length);
         this.faces = new Array(face_array.length);
         this.edges = [];
@@ -122,6 +125,7 @@ class Mesh {
         this.colors = [];
 
         this.twins = new Array(vertex_array.length);  // List used to process twins
+        this.creased_edges = creased_edges;
 
         this.setup_vertices(vertex_array);
         this.setup_faces(face_array);
@@ -139,7 +143,6 @@ class Mesh {
             let new_vertex = new Vertex();
             new_vertex.pos = vertex[0];
             new_vertex.color = vertex[1];
-            new_vertex.flag = 0;
             new_vertex.index = i;
             this.verts[i] = new_vertex;
             this.twins[i] = [];
@@ -163,6 +166,14 @@ class Mesh {
                 let next_vertex_index = face[(j + 1) % 3];
                 let new_edge = new Edge(this.verts[next_vertex_index], this.verts[vertex_index], null, null, new_face);
 
+                for (let crease of this.creased_edges) {
+                    if ((crease[0] === vertex_index && crease[1] === next_vertex_index) ||
+                        (crease[1] === vertex_index && crease[0] === next_vertex_index)) {
+                        new_edge.creased = true;
+                        break;
+                    }
+                }
+
                 let min_vertex_index = Math.min(vertex_index, next_vertex_index);
                 let max_vertex_index = Math.max(vertex_index, next_vertex_index);
                 this.twins[min_vertex_index].push([max_vertex_index, new_edge]); // add (vertex, edge) to twin list
@@ -179,7 +190,6 @@ class Mesh {
             this.faces[i] = new_face;
             this.edges = this.edges.concat(edges);
         }
-
         this.setup_twins();
     }
 
@@ -213,7 +223,7 @@ class Mesh {
         this.adjust_vertices();
         let vertex_array = this.create_vertex_array(new_vertices);
 
-        return new Mesh(vertex_array, face_array);
+        return new Mesh(vertex_array, face_array, copyArray(this.creased_edges));
     }
 
     /**
@@ -238,7 +248,7 @@ class Mesh {
                     vertex_index++;
 
                     // Not a boundary edge
-                    if (e.twin) {
+                    if (e.twin && !e.creased) {
                         new_vertex.set_to_average([e.head, e.tail, e.next.head, e.twin.next.head],
                             [3 / 8, 3 / 8, 1 / 8, 1 / 8], 0);
                         e.twin.odd = new_vertex; // Update our twin's vertex
@@ -323,7 +333,6 @@ class Mesh {
         for (let i = 0; i < num_verts; i++) {
             let old_vertex = this.verts[i];
             let new_vertex = updated_verts[i];
-            // This will break our pointers but we're recreating our mesh afterward.  ¯\_(ツ)_/¯
             old_vertex.pos = new_vertex.pos;
             old_vertex.color = new_vertex.color;
         }
@@ -357,7 +366,8 @@ class Mesh {
         let iter = vertex.edge;
         do { // Sweep clock-wise until border
             iter = iter.next;
-            if (!iter.twin) {
+            // A creased edge is also a boundary edge
+            if (!iter.twin || iter.creased) {
                 neighbors.push(iter.head);
                 break;
             }
@@ -366,7 +376,8 @@ class Mesh {
 
         iter = vertex.edge;
         do { // Sweep counter-clock-wise until border
-            if (!iter.twin) {
+            // A creased edge is also a boundary edge
+            if (!iter.twin || iter.creased) {
                 neighbors.push(iter.tail);
                 break;
             }
@@ -388,7 +399,8 @@ class Mesh {
         let original = edge;
         do {
             edge = edge.next;
-            if (!edge.twin) {
+            // Treat vertices adjacent to creased edges as boundary vertices
+            if (!edge.twin || edge.creased) {
                 boundary = true;
                 break;
             } else {
@@ -439,11 +451,30 @@ class Mesh {
     copy() {
         let face_array = [];
 
+        // We can't use create_face_array() because that assumes the subdivide procedure has been called
         for (let face of this.faces) {
             let e = face.edge;
             face_array.push([e.index, e.next.index, e.next.next.index]); // cc-w
         }
 
-        return new Mesh(this.create_vertex_array([]), face_array);
+        return new Mesh(this.create_vertex_array([]), face_array, copyArray(this.creased_edges));
+    }
+}
+
+/**
+ * Recursive function for deep copying arrays with nested arrays. This function will not work if the array
+ * contains objects inside of it!
+ * @param array Array to copy (potentially nested)
+ * @returns {*} Deep copy of the specified array.
+ */
+function copyArray(array) {
+    if (Array.isArray(array)) {
+        let copy = array.slice(0);
+        for (let i = 0; i < copy.length; i++) {
+            copy[i] = copyArray(copy[i]);
+        }
+        return copy;
+    } else {
+        return array;
     }
 }
