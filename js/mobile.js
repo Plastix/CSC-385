@@ -30,8 +30,10 @@ class Mobile {
         // An example of the intended behavior of mobile is hardcoded below.
         // It is not general.  You'll need to replace it.
         this.example_rod =
-            {"parent": null, "length": 4, "attach_point": 1.5, "attach_point_parent": 0,
-                "height": 0.5,"angle": 0,"angular_vel": 0.1};
+            {
+                "parent": null, "length": 4, "attach_point": 1.5, "attach_point_parent": 0,
+                "height": 0.5, "angle": 0, "angular_vel": 0.1
+            };
 
         this.example_pendant1 = {
             "parent": this.example_rod,
@@ -50,8 +52,8 @@ class Mobile {
                     [vec4(-0.5, 0.5, 0.5, 1), vec4(0, 1, 1, 1)]
                 ],
                 [[0, 2, 1], [0, 3, 2], [1, 2, 5], [6, 5, 2], [3, 6, 2], [3, 7, 6], [3, 0, 4],
-                    [3, 4, 7], [0, 1, 5], [0, 5, 4], [4, 5, 6], [4, 6, 7]],this.gl, this.program),
-            "instance_mat": translate(0,-0.5,0)
+                    [3, 4, 7], [0, 1, 5], [0, 5, 4], [4, 5, 6], [4, 6, 7]], this.gl, this.program),
+            "instance_mat": translate(0, -0.5, 0)
         };
 
         this.example_pendant2 = {
@@ -61,10 +63,8 @@ class Mobile {
             "angle": 180,
             "angular_vel": -1,
             "mesh": this.example_pendant1["mesh"],
-            "instance_mat": mult(translate(0,-0.5,0),mult(rotateZ(45),mult(rotateX(45), scalem(1,2,3))))
+            "instance_mat": mult(translate(0, -0.5, 0), mult(rotateZ(45), mult(rotateX(45), scalem(1, 2, 3))))
         };
-
-
 
 
     }
@@ -95,7 +95,7 @@ class Mobile {
      * @return {object}
      *      Returns a reference to the new rod.  Can be use as the parent in future calls.
      */
-    add_rod(parent, length, attach_point, attach_point_parent, height, angle, angular_vel){
+    add_rod(parent, length, attach_point, attach_point_parent, height, angle, angular_vel) {
 
         // IMPLEMENT ME!
         return null;
@@ -125,7 +125,7 @@ class Mobile {
      *      A transformation matrix that is applied to the mesh before it is
      *      attached to its parent so that pendant contacts the string from its parent at (0,0,0).
      */
-    add_pendant(parent, attach_point_parent, height, angle, angular_vel, mesh, instance_mat){
+    add_pendant(parent, attach_point_parent, height, angle, angular_vel, mesh, instance_mat) {
 
         // IMPLEMENT ME!
 
@@ -138,7 +138,7 @@ class Mobile {
      * @param {number} dt
      *      Amount of time to evolve the mobile.
      */
-    evolve(dt){
+    evolve(dt) {
 
         // IMPLEMENT ME!
         // Below is example code for evolving a two pendants attached a rod.
@@ -165,9 +165,9 @@ class Mobile {
      * @param {vec4} camera_normal
      *      Camera direction normal.
      */
-    set_camera_free(camera_pos, camera_up, camera_normal){
+    set_camera_free(camera_pos, camera_up, camera_normal) {
 
-        this.view_mat = lookAt(camera_pos, add(camera_pos,camera_normal), camera_up);
+        this.view_mat = lookAt(camera_pos, add(camera_pos, camera_normal), camera_up);
 
     }
 
@@ -188,7 +188,7 @@ class Mobile {
      * @param {number} dist
      *      Distance of camera from pendant.
      */
-    set_camera_fixed(camera_pos, camera_up, i, dist){
+    set_camera_fixed(camera_pos, camera_up, i, dist) {
 
         // IMPLEMENT ME!
 
@@ -206,7 +206,7 @@ class Mobile {
      *      Camera is fixed on the ith pendant added to the mobile.
      *      If i not a valid pendant index, this function has no effect.
      */
-    set_camera_tracking(camera_pos, camera_up, i){
+    set_camera_tracking(camera_pos, camera_up, i) {
 
         // IMPLEMENT ME!
 
@@ -227,7 +227,7 @@ class Mobile {
      * @param near
      * @param far
      */
-    set_proj_perspective(fovy, aspect_ratio, near, far){
+    set_proj_perspective(fovy, aspect_ratio, near, far) {
 
         this.project_mat = perspective(fovy, aspect, near, far);
 
@@ -244,9 +244,9 @@ class Mobile {
      * @param near
      * @param far
      */
-    set_proj_ortho(left,right,bottom,top,near,far){
+    set_proj_ortho(left, right, bottom, top, near, far) {
 
-        this.project_mat = ortho(left,right,bottom,top,near,far);
+        this.project_mat = ortho(left, right, bottom, top, near, far);
 
     }
 
@@ -257,13 +257,13 @@ class Mobile {
     //
     // ================================================================================
 
-    set_draw_wireframe(){
+    set_draw_wireframe() {
 
         this.draw_mode = DRAW_WIRE;
 
     }
 
-    set_draw_filled(){
+    set_draw_filled() {
 
         this.draw_mode = DRAW_FILL;
 
@@ -272,7 +272,7 @@ class Mobile {
     /**
      * Renders the mobile.
      */
-    render(){
+    render() {
 
         this.gl.useProgram(this.program);
 
@@ -284,75 +284,75 @@ class Mobile {
         // and interface with WebGL and the modified Mesh class.
 
         // Set projection and view transformation for all objects.
-        var PV_mat = mult(this.project_mat, this.view_mat);
+        let PV_mat = mult(this.project_mat, this.view_mat);
         this.gl.uniformMatrix4fv(this.mPV, false, flatten(PV_mat));
-        var M_mat;
+        let M_mat;
 
         // Render the string from root to rod.
-        fill_buffer(this.line_buffer, [this.root_pos,add(this.root_pos,vec4(0,this.example_rod["height"],0,0))]);
+        fill_buffer(this.line_buffer, [this.root_pos, add(this.root_pos, vec4(0, this.example_rod["height"], 0, 0))]);
         fill_buffer(this.line_buffer_color, [COLOR_BLACK, COLOR_BLACK]);
-        enable_attribute_buffer(this.vPosition,this.line_buffer,4);
-        enable_attribute_buffer(this.vColor,this.line_buffer_color,3);
+        enable_attribute_buffer(this.vPosition, this.line_buffer, 4);
+        enable_attribute_buffer(this.vColor, this.line_buffer_color, 3);
         M_mat = mat4();
-        M_mat = mult(translate(0,-this.example_rod["height"],0), M_mat);
+        M_mat = mult(translate(0, -this.example_rod["height"], 0), M_mat);
         this.gl.uniformMatrix4fv(this.mM, false, flatten(M_mat));
         this.gl.drawArrays(this.gl.LINES, 0, 2);
 
         // Render the rod.
-        fill_buffer(this.line_buffer, [vec4(0,0,0,1), vec4(this.example_rod["length"])]);
+        fill_buffer(this.line_buffer, [vec4(0, 0, 0, 1), vec4(this.example_rod["length"])]);
         fill_buffer(this.line_buffer_color, [COLOR_BLACK, COLOR_BLACK]);
-        enable_attribute_buffer(this.vPosition,this.line_buffer,4);
-        enable_attribute_buffer(this.vColor,this.line_buffer_color,3);
+        enable_attribute_buffer(this.vPosition, this.line_buffer, 4);
+        enable_attribute_buffer(this.vColor, this.line_buffer_color, 3);
         M_mat = mat4();
-        M_mat = mult(translate(-this.example_rod["attach_point"],0,0), M_mat);
+        M_mat = mult(translate(-this.example_rod["attach_point"], 0, 0), M_mat);
         M_mat = mult(rotateY(this.example_rod["angle"]), M_mat);
-        M_mat = mult(translate(0,-this.example_rod["height"],0), M_mat);
+        M_mat = mult(translate(0, -this.example_rod["height"], 0), M_mat);
         this.gl.uniformMatrix4fv(this.mM, false, flatten(M_mat));
         this.gl.drawArrays(this.gl.LINES, 0, 2);
 
         // Render the string to the first pendant.
-        fill_buffer(this.line_buffer, [vec4(0,0,0,1), vec4(0,this.example_pendant1["height"],0,1)]);
+        fill_buffer(this.line_buffer, [vec4(0, 0, 0, 1), vec4(0, this.example_pendant1["height"], 0, 1)]);
         fill_buffer(this.line_buffer_color, [COLOR_BLACK, COLOR_BLACK]);
-        enable_attribute_buffer(this.vPosition,this.line_buffer,4);
-        enable_attribute_buffer(this.vColor,this.line_buffer_color,3);
+        enable_attribute_buffer(this.vPosition, this.line_buffer, 4);
+        enable_attribute_buffer(this.vColor, this.line_buffer_color, 3);
         M_mat = mat4();
-        M_mat = mult(translate(-(this.example_rod["attach_point"] - this.example_pendant1["attach_point_parent"]),-this.example_pendant1["height"],0), M_mat);
+        M_mat = mult(translate(-(this.example_rod["attach_point"] - this.example_pendant1["attach_point_parent"]), -this.example_pendant1["height"], 0), M_mat);
         M_mat = mult(rotateY(this.example_rod["angle"]), M_mat);
-        M_mat = mult(translate(0,-this.example_rod["height"],0), M_mat);
+        M_mat = mult(translate(0, -this.example_rod["height"], 0), M_mat);
         this.gl.uniformMatrix4fv(this.mM, false, flatten(M_mat));
         this.gl.drawArrays(this.gl.LINES, 0, 2);
 
         // Render the string to the second pendant.
-        fill_buffer(this.line_buffer, [vec4(0,0,0,1), vec4(0,this.example_pendant2["height"],0,1)]);
+        fill_buffer(this.line_buffer, [vec4(0, 0, 0, 1), vec4(0, this.example_pendant2["height"], 0, 1)]);
         fill_buffer(this.line_buffer_color, [COLOR_BLACK, COLOR_BLACK]);
-        enable_attribute_buffer(this.vPosition,this.line_buffer,4);
-        enable_attribute_buffer(this.vColor,this.line_buffer_color,3);
+        enable_attribute_buffer(this.vPosition, this.line_buffer, 4);
+        enable_attribute_buffer(this.vColor, this.line_buffer_color, 3);
         M_mat = mat4();
-        M_mat = mult(translate(-(this.example_rod["attach_point"] - this.example_pendant2["attach_point_parent"]),-this.example_pendant2["height"],0), M_mat);
+        M_mat = mult(translate(-(this.example_rod["attach_point"] - this.example_pendant2["attach_point_parent"]), -this.example_pendant2["height"], 0), M_mat);
         M_mat = mult(rotateY(this.example_rod["angle"]), M_mat);
-        M_mat = mult(translate(0,-this.example_rod["height"],0), M_mat);
+        M_mat = mult(translate(0, -this.example_rod["height"], 0), M_mat);
         this.gl.uniformMatrix4fv(this.mM, false, flatten(M_mat));
         this.gl.drawArrays(this.gl.LINES, 0, 2);
 
         // Render the first pendant.
         M_mat = mat4();
         M_mat = mult(this.example_pendant1["instance_mat"], M_mat);
-        M_mat = mult(translate(0,-this.example_pendant1["height"],0),M_mat);
-        M_mat = mult(rotateY(this.example_pendant1["angle"]),M_mat);
-        M_mat = mult(translate(-(this.example_rod["attach_point"] - this.example_pendant1["attach_point_parent"]),0,0),M_mat);
-        M_mat = mult(rotateY(this.example_rod["angle"]),M_mat);
-        M_mat = mult(translate(0,-this.example_rod["height"],0),M_mat);
+        M_mat = mult(translate(0, -this.example_pendant1["height"], 0), M_mat);
+        M_mat = mult(rotateY(this.example_pendant1["angle"]), M_mat);
+        M_mat = mult(translate(-(this.example_rod["attach_point"] - this.example_pendant1["attach_point_parent"]), 0, 0), M_mat);
+        M_mat = mult(rotateY(this.example_rod["angle"]), M_mat);
+        M_mat = mult(translate(0, -this.example_rod["height"], 0), M_mat);
         this.gl.uniformMatrix4fv(this.mM, false, flatten(M_mat));
         this.example_pendant1["mesh"].render(this.draw_mode);
 
         // Render the second pendant.
         M_mat = mat4();
         M_mat = mult(this.example_pendant2["instance_mat"], M_mat);
-        M_mat = mult(translate(0,-this.example_pendant2["height"],0),M_mat);
-        M_mat = mult(rotateY(this.example_pendant2["angle"]),M_mat);
-        M_mat = mult(translate(-(this.example_rod["attach_point"] - this.example_pendant2["attach_point_parent"]),0,0),M_mat);
-        M_mat = mult(rotateY(this.example_rod["angle"]),M_mat);
-        M_mat = mult(translate(0,-this.example_rod["height"],0),M_mat);
+        M_mat = mult(translate(0, -this.example_pendant2["height"], 0), M_mat);
+        M_mat = mult(rotateY(this.example_pendant2["angle"]), M_mat);
+        M_mat = mult(translate(-(this.example_rod["attach_point"] - this.example_pendant2["attach_point_parent"]), 0, 0), M_mat);
+        M_mat = mult(rotateY(this.example_rod["angle"]), M_mat);
+        M_mat = mult(translate(0, -this.example_rod["height"], 0), M_mat);
         this.gl.uniformMatrix4fv(this.mM, false, flatten(M_mat));
         this.example_pendant2["mesh"].render(this.draw_mode);
 
