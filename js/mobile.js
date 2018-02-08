@@ -5,6 +5,8 @@ class Mobile {
      *
      * @param {vec4} root_pos
      *      Position of root.
+     * @param gl WebGL context.
+     * @param program Shader program context.
      */
     constructor(root_pos, gl, program) {
 

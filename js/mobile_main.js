@@ -5,7 +5,7 @@
 // This is the main JS file.
 window.onload = init;
 
-let mobile = null;
+let mobile = null, canvas, gl;
 
 // Renders the frame.
 function render() {
@@ -25,28 +25,23 @@ function render() {
 // Handles click on drawing mode menu.
 // Resets object points if mode changes.
 function view_mode_listener() {
-
     if (this.selectedIndex === DRAW_FILL) {
         mobile.set_draw_filled()
     } else {
         mobile.set_draw_wireframe()
     }
-
 }
 
 
 // Install event listeners for UI elements.
 function init_listeners() {
-
     // Listen for clicks on the drawing mode menu.
     let view_menu = document.getElementById("ViewMode");
     view_menu.addEventListener("click", view_mode_listener);
-
 }
 
 
 function init() {
-
     // Initialize WebGL.
     canvas = document.getElementById("gl-canvas");
     gl = WebGLUtils.setupWebGL(canvas);
@@ -64,7 +59,6 @@ function init() {
     init_listeners();
 
     mobile = new Mobile(vec4(0, 0, 0, 1), gl, program);
-
     mobile.set_camera_free(vec3(3, -1, 3), vec3(0, 1, 0), vec3(3, -1, 3));
     mobile.set_proj_ortho(-8, 8, -8, 8, -8, 8);
 

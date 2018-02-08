@@ -84,10 +84,8 @@ class Mesh {
     // and the shader program that the mesh will be rendered with.
     constructor(vertex_array, face_array, gl, program) {
 
-        let j;
-// >>>> New in Project 3 <<<<
-        let i;
-// Initialize gl buffers.
+        // >>>> New in Project 3 <<<<
+        // Initialize gl buffers.
         this.gl = gl;
         this.pos_buffer = gl.createBuffer();
         this.color_buffer = gl.createBuffer();
@@ -107,6 +105,7 @@ class Mesh {
         // Arrays to store edges to twin.
         let twins = new Array(vertex_array.length);
 
+        let i;
         // Convert vertex array to objects.
         for (i = 0; i < vertex_array.length; i++) {
 
@@ -120,6 +119,7 @@ class Mesh {
 
         }
 
+        let j;
         // Convert face array to objects.
         for (i = 0; i < face_array.length; i++) {
             let face = face_array[i];
