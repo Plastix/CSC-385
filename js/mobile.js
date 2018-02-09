@@ -1,3 +1,39 @@
+class Rod {
+
+    constructor(parent, length, attach_point, attach_point_parent, height, angle, angular_vel) {
+        this.parent = parent;
+        this.length = length;
+        this.attach_point = attach_point;
+        this.attach_point_parent = attach_point_parent;
+        this.height = height;
+        this.angle = angle;
+        this.angular_vel = angular_vel;
+        this.children = []
+    }
+
+    add_child(object) {
+        if (!(object instanceof Pendant || object instanceof Rod)) {
+            console.error("Child must either be a rod or pendant!");
+        }
+
+        this.children.push(object);
+    }
+
+}
+
+class Pendant {
+
+    constructor(parent, height, attach_point_parent, angle, angular_vel, mesh, instance_mat) {
+        this.parent = parent;
+        this.height = height;
+        this.attach_point_parent = attach_point_parent;
+        this.angle = angle;
+        this.angular_vel = angular_vel;
+        this.mesh = mesh;
+        this.instance_mat = instance_mat;
+    }
+}
+
 class Mobile {
 
     /**
@@ -26,6 +62,26 @@ class Mobile {
 
         // Store global projection matrix. Is modified by set_proj functions.
         this.project_mat = mat4();
+
+        // TODO (Aidan) root of mobile
+        this.root_rod = null;
+        let mesh = new Mesh(
+            [[vec4(-0.5, -0.5, -0.5, 1), vec4(0, 0, 0, 1)],
+                [vec4(0.5, -0.5, -0.5, 1), vec4(1, 0, 0, 1)],
+                [vec4(0.5, 0.5, -0.5, 1), vec4(1, 1, 0, 1)],
+                [vec4(-0.5, 0.5, -0.5, 1), vec4(0, 1, 0, 1)],
+                [vec4(-0.5, -0.5, 0.5, 1), vec4(0, 0, 1, 1)],
+                [vec4(0.5, -0.5, 0.5, 1), vec4(1, 0, 1, 1)],
+                [vec4(0.5, 0.5, 0.5, 1), vec4(1, 1, 1, 1)],
+                [vec4(-0.5, 0.5, 0.5, 1), vec4(0, 1, 1, 1)]
+            ],
+            [[0, 2, 1], [0, 3, 2], [1, 2, 5], [6, 5, 2], [3, 6, 2], [3, 7, 6], [3, 0, 4],
+                [3, 4, 7], [0, 1, 5], [0, 5, 4], [4, 5, 6], [4, 6, 7]], this.gl, this.program);
+
+        this.add_rod(null, 4, 1.5, 0, 0.5, 0, 0.1);
+        this.add_pendant(this.root_rod, 0.25, 3.5, 90, 0.1, mesh, translate(0, -0.5, 0));
+        this.add_pendant(this.root_rod, 1.5, 0, 180, -1, mesh,
+            mult(translate(0, -0.5, 0), mult(rotateZ(45), mult(rotateX(45), scalem(1, 2, 3)))));
 
         // IMPLEMENT ME!
         //
@@ -98,9 +154,17 @@ class Mobile {
      *      Returns a reference to the new rod.  Can be use as the parent in future calls.
      */
     add_rod(parent, length, attach_point, attach_point_parent, height, angle, angular_vel) {
+        if (!parent instanceof Rod) {
+            console.error("You can only add a rod to another rod!");
+        }
 
-        // IMPLEMENT ME!
-        return null;
+        let rod = new Rod(parent, length, attach_point, attach_point_parent, height, angle, angular_vel);
+        if (parent != null) {
+            parent.add_child(rod);
+        } else {
+            this.root_rod = rod;
+        }
+        return rod;
 
     }
 
@@ -127,9 +191,19 @@ class Mobile {
      *      A transformation matrix that is applied to the mesh before it is
      *      attached to its parent so that pendant contacts the string from its parent at (0,0,0).
      */
-    add_pendant(parent, attach_point_parent, height, angle, angular_vel, mesh, instance_mat) {
+    add_pendant(parent, height, attach_point_parent, angle, angular_vel, mesh, instance_mat) {
+        if (!parent instanceof Rod) {
+            console.error("You can only add a pendant to a rod!");
+        }
 
-        // IMPLEMENT ME!
+        if (parent == null) {
+            console.log("You must specify a parent rod to connect the pendant to!")
+        }
+
+        let pendant = new Pendant(parent, height, attach_point_parent, angle, angular_vel, mesh, instance_mat);
+        parent.add_child(pendant);
+
+        return pendant;
 
     }
 
