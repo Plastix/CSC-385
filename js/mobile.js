@@ -1,34 +1,36 @@
-class Rod {
+class MobileObject {
 
-    constructor(parent, length, attach_point, attach_point_parent, height, angle, angular_vel) {
+    constructor(parent, height, attach_point_parent, angle, angular_vel) {
         this.parent = parent;
-        this.length = length;
-        this.attach_point = attach_point;
-        this.attach_point_parent = attach_point_parent;
         this.height = height;
+        this.attach_point_parent = attach_point_parent;
         this.angle = angle;
         this.angular_vel = angular_vel;
+    }
+}
+
+class Rod extends MobileObject {
+
+    constructor(parent, length, attach_point, attach_point_parent, height, angle, angular_vel) {
+        super(parent, height, attach_point_parent, angle, angular_vel);
+        this.length = length;
+        this.attach_point = attach_point;
         this.children = []
     }
 
     add_child(object) {
-        if (!(object instanceof Pendant || object instanceof Rod)) {
+        if (!(object instanceof MobileObject)) {
             console.error("Child must either be a rod or pendant!");
         }
-
         this.children.push(object);
     }
 
 }
 
-class Pendant {
+class Pendant extends MobileObject {
 
     constructor(parent, height, attach_point_parent, angle, angular_vel, mesh, instance_mat) {
-        this.parent = parent;
-        this.height = height;
-        this.attach_point_parent = attach_point_parent;
-        this.angle = angle;
-        this.angular_vel = angular_vel;
+        super(parent, height, attach_point_parent, angle, angular_vel);
         this.mesh = mesh;
         this.instance_mat = instance_mat;
     }
