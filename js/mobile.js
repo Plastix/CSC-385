@@ -16,11 +16,11 @@ class MobileObject {
 
     evolve(dt) {
         this.angle += this.angular_vel * dt;
-        this.setup_transform();
+        this.setup_transform(); // Recreate the transform matrix with the new angle
     }
 
     setup_transform() {
-        // Used by subclasses
+        // Implemented by subclasses
     }
 }
 
@@ -89,9 +89,7 @@ class Mobile {
         // Store global projection matrix. Is modified by set_proj functions.
         this.project_mat = mat4();
 
-        // TODO (Aidan) root of mobile - Make this a root a list
-        this.root_rod = null;
-        let mesh = new Mesh(
+        const CUBE_MESH = new Mesh(
             [[vec4(-0.5, -0.5, -0.5, 1), vec4(0, 0, 0, 1)],
                 [vec4(0.5, -0.5, -0.5, 1), vec4(1, 0, 0, 1)],
                 [vec4(0.5, 0.5, -0.5, 1), vec4(1, 1, 0, 1)],
@@ -104,9 +102,11 @@ class Mobile {
             [[0, 2, 1], [0, 3, 2], [1, 2, 5], [6, 5, 2], [3, 6, 2], [3, 7, 6], [3, 0, 4],
                 [3, 4, 7], [0, 1, 5], [0, 5, 4], [4, 5, 6], [4, 6, 7]], this.gl, this.program);
 
+        // TODO (Aidan) root of mobile - Make this a root a list
+        this.root_rod = null;
         this.add_rod(null, 4, 1.5, 0, 0.5, 0, 0.1);
-        this.add_pendant(this.root_rod, 0.25, 3.5, 90, 0.1, mesh, translate(0, -0.5, 0));
-        this.add_pendant(this.root_rod, 1.5, 0, 180, -1, mesh,
+        this.add_pendant(this.root_rod, 0.25, 3.5, 90, 0.1, CUBE_MESH, translate(0, -0.5, 0));
+        this.add_pendant(this.root_rod, 1.5, 0, 180, -1, CUBE_MESH,
             mult(translate(0, -0.5, 0), mult(rotateZ(45), mult(rotateX(45), scalem(1, 2, 3)))));
     }
 
@@ -327,38 +327,53 @@ class Mobile {
         this.gl.uniformMatrix4fv(this.mPV, false, flatten(PV_mat));
 
         (function render(object, M_mat) {
-            if (!object) return;
+            if (object) {
+                // Update current transformation matrix
+                M_mat = mult(M_mat, translate(object.attach_point_parent, -object.height, 0));
+                this.draw_string(object, M_mat);
+                M_mat = mult(M_mat, object.transform);
 
-            // Update current transformation matrix
-            M_mat = mult(M_mat, translate(object.attach_point_parent, -object.height, 0));
-
-            // Render string to child
-            fill_buffer(object.line_buffer, [vec4(0, 0, 0, 1), vec4(0, object.height, 0, 1)]);
-            fill_buffer(object.line_buffer_color, [COLOR_BLACK, COLOR_BLACK]);
-            enable_attribute_buffer(object.vPosition, object.line_buffer, 4);
-            enable_attribute_buffer(object.vColor, object.line_buffer_color, 3);
-            gl.uniformMatrix4fv(this.mM, false, flatten(M_mat));
-            gl.drawArrays(this.gl.LINES, 0, 2);
-
-            M_mat = mult(M_mat, object.transform);
-
-            if (object instanceof Pendant) { // Render pendant
-                this.gl.uniformMatrix4fv(this.mM, false, flatten(M_mat));
-                object.mesh.render(this.draw_mode);
-            } else if (object instanceof Rod) {  // Render rod
-
-                fill_buffer(object.line_buffer, [vec4(0, 0, 0, 1), vec4(object.length)]);
-                fill_buffer(object.line_buffer_color, [COLOR_BLACK, COLOR_BLACK]);
-                enable_attribute_buffer(object.vPosition, object.line_buffer, 4);
-                enable_attribute_buffer(object.vColor, object.line_buffer_color, 3);
-                this.gl.uniformMatrix4fv(this.mM, false, flatten(M_mat));
-                this.gl.drawArrays(this.gl.LINES, 0, 2);
-
-                // Recursively render children of rod
-                for (let child of object.children) {
-                    render.call(this, child, M_mat);
+                if (object instanceof Pendant) {
+                    this.draw_pendant(object, M_mat);
+                } else if (object instanceof Rod) {
+                    this.draw_rod(object, M_mat);
+                    // Recursively render children of rod
+                    for (let child of object.children) {
+                        render.call(this, child, M_mat);
+                    }
                 }
             }
         }).call(this, this.root_rod, mat4());
+    }
+
+    draw_rod(object, M_mat) {
+        fill_buffer(object.line_buffer, [vec4(0, 0, 0, 1), vec4(object.length)]);
+        fill_buffer(object.line_buffer_color, [COLOR_BLACK, COLOR_BLACK]);
+        enable_attribute_buffer(object.vPosition, object.line_buffer, 4);
+        enable_attribute_buffer(object.vColor, object.line_buffer_color, 3);
+        this.gl.uniformMatrix4fv(this.mM, false, flatten(M_mat));
+        this.gl.drawArrays(this.gl.LINES, 0, 2);
+    }
+
+    draw_pendant(object, M_mat) {
+        this.gl.uniformMatrix4fv(this.mM, false, flatten(M_mat));
+        object.mesh.render(this.draw_mode);
+    }
+
+    draw_string(object, M_mat) {
+        let start_point = vec4(0, 0, 0, 1);
+        let end_point = vec4(0, object.height, 0, 1);
+
+        if (!object.parent) {
+            start_point = this.root_pos;
+            end_point = add(this.root_pos, end_point);
+        }
+
+        fill_buffer(object.line_buffer, [start_point, end_point]);
+        fill_buffer(object.line_buffer_color, [COLOR_BLACK, COLOR_BLACK]);
+        enable_attribute_buffer(object.vPosition, object.line_buffer, 4);
+        enable_attribute_buffer(object.vColor, object.line_buffer_color, 3);
+        gl.uniformMatrix4fv(this.mM, false, flatten(M_mat));
+        gl.drawArrays(this.gl.LINES, 0, 2);
     }
 }
