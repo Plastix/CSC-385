@@ -393,7 +393,7 @@ class Mobile {
             if (!object) return;
 
             // Update current transformation matrix
-            M_mat = mult(translate(object.attach_point_parent, -object.height, 0), M_mat);
+            M_mat = mult(M_mat, translate(object.attach_point_parent, -object.height, 0));
             // Render string to child
             fill_buffer(object.line_buffer, [vec4(0, 0, 0, 1), vec4(0, object.height, 0, 1)]);
             fill_buffer(object.line_buffer_color, [COLOR_BLACK, COLOR_BLACK]);
