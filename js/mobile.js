@@ -9,10 +9,10 @@ class MobileObject {
         this.angular_vel = angular_vel;
         this.transform_mat = null;
 
-        this.line_buffer = gl.createBuffer();
-        this.line_buffer_color = gl.createBuffer();
-        this.vPosition = gl.getAttribLocation(program, "vPosition");
-        this.vColor = gl.getAttribLocation(program, "vColor");
+        this.line_buffer = this.gl.createBuffer();
+        this.line_buffer_color = this.gl.createBuffer();
+        this.vPosition = this.gl.getAttribLocation(program, "vPosition");
+        this.vColor = this.gl.getAttribLocation(program, "vColor");
         this.mM = this.gl.getUniformLocation(program, "mM");
     }
 
@@ -118,6 +118,9 @@ class Mobile {
         this.program = program;
         this.mPV = this.gl.getUniformLocation(this.program, "mPV");
 
+        this.camera_mode = null;
+        this.pendants = []; // List of pendants used in camera modes
+
         // Stores global view matrix. Is modified by set_camera functions.
         this.view_mat = mat4();
 
@@ -139,7 +142,7 @@ class Mobile {
 
         // TODO (Aidan) root of mobile - Make this a root a list
         this.root_rod = null;
-        this.add_rod(null, 4, 1.5, 0, 0.5, 0, 0.1);
+        this.add_rod(null, 4, 1.5, 0, 0.5, 0, 3);
         this.add_pendant(this.root_rod, 0.25, 3.5, 90, 0.1, CUBE_MESH, translate(0, -0.5, 0));
         this.add_pendant(this.root_rod, 1.5, 0, 180, -1, CUBE_MESH,
             mult(translate(0, -0.5, 0), mult(rotateZ(45), mult(rotateX(45), scalem(1, 2, 3)))));
@@ -223,6 +226,7 @@ class Mobile {
             angular_vel, mesh, instance_mat);
         parent.add_child(pendant);
 
+        this.pendants.push(pendant);
         return pendant;
 
     }
@@ -253,6 +257,7 @@ class Mobile {
     //
     // ================================================================================
 
+
     /**
      * Sets the camera mode of future renders to free mode.
      *
@@ -264,6 +269,10 @@ class Mobile {
      *      Camera direction normal.
      */
     set_camera_free(camera_pos, camera_up, camera_normal) {
+        this.camera_mode = {
+            mode: CAMERA_FREE,
+        };
+
         this.view_mat = lookAt(camera_pos, add(camera_pos, camera_normal), camera_up);
     }
 
@@ -301,7 +310,14 @@ class Mobile {
      *      If i not a valid pendant index, this function has no effect.
      */
     set_camera_tracking(camera_pos, camera_up, i) {
-        // IMPLEMENT ME!
+        if (i >= 0 && i < this.pendants.length) {
+            this.camera_mode = {
+                mode: CAMERA_TRACKING,
+                pos: camera_pos,
+                up: camera_up,
+                index: i
+            };
+        }
     }
 
     // ================================================================================
@@ -352,31 +368,57 @@ class Mobile {
         this.draw_mode = DRAW_FILL;
     }
 
+    updateCamera() {
+        let mode = this.camera_mode.mode;
+        if (mode === CAMERA_TRACKING) {
+            let index = this.camera_mode.index;
+            let object = this.pendants[index];
+
+            let transform = mat4();
+            while (object) {
+                transform = mult(object.transform_mat, transform);
+                transform = mult(translate(object.attach_point_parent, -object.height, 0), transform);
+                object = object.parent;
+            }
+
+            let origin = vec4(0, 0, 0, 1);
+            let pos = vec3(
+                dot(transform[0], origin),
+                dot(transform[1], origin),
+                dot(transform[2], origin),
+            );
+
+            this.view_mat = lookAt(this.camera_mode.pos, pos, this.camera_mode.up);
+        }
+    }
+
     /**
      * Renders the mobile.
      */
     render() {
         this.gl.useProgram(this.program);
 
+        // Updates the view matrix for certain camera modes
+        this.updateCamera();
+
         // Set projection and view transformation for all objects.
         let PV_mat = mult(this.project_mat, this.view_mat);
         this.gl.uniformMatrix4fv(this.mPV, false, flatten(PV_mat));
-        let root_pos = this.root_pos, draw_mode = this.draw_mode;
 
         (function render(object, M_mat) {
             if (object) {
                 // Update current transformation matrix
                 M_mat = mult(M_mat, translate(object.attach_point_parent, -object.height, 0));
-                object.draw_string(M_mat, root_pos);
+                object.draw_string(M_mat, this.root_pos);
                 M_mat = mult(M_mat, object.transform_mat);
-                object.draw(M_mat, draw_mode);
+                object.draw(M_mat, this.draw_mode);
 
                 if (object instanceof Rod) {
                     for (let child of object.children) {  // Recursively render children of rod
-                        render(child, M_mat);
+                        render.call(this, child, M_mat);
                     }
                 }
             }
-        })(this.root_rod, mat4());
+        }).call(this, this.root_rod, mat4());
     }
 }

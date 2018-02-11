@@ -33,11 +33,23 @@ function view_mode_listener() {
 }
 
 
+function camera_mode_listener() {
+    if (this.selectedIndex === CAMERA_FREE) {
+        mobile.set_camera_free(vec3(3, -1, 3), vec3(0, 1, 0), vec3(3, -1, 3));
+    } else if (this.selectedIndex === CAMERA_TRACKING) {
+        let index = document.getElementById("PendantIndex").value;
+        mobile.set_camera_tracking(vec3(3, -1, 3), vec3(0, 1, 0), index);
+    }
+}
+
 // Install event listeners for UI elements.
 function init_listeners() {
     // Listen for clicks on the drawing mode menu.
     let view_menu = document.getElementById("ViewMode");
     view_menu.addEventListener("click", view_mode_listener);
+
+    let camera = document.getElementById("CameraMode");
+    camera.addEventListener("click", camera_mode_listener);
 }
 
 
