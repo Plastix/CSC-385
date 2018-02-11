@@ -35,12 +35,21 @@ function view_mode_listener() {
 
 function camera_mode_listener() {
     let camera = document.getElementById("CameraMode");
+    let pendant = document.getElementById("PendantIndex");
     if (camera.selectedIndex === CAMERA_FREE) {
+        mobile.set_proj_ortho(-8, 8, -8, 8, -8, 8);
         mobile.set_camera_free(vec3(3, -1, 3), vec3(0, 1, 0), vec3(3, -1, 3));
     } else if (camera.selectedIndex === CAMERA_TRACKING) {
-        let pendant = document.getElementById("PendantIndex");
-        let index = pendant.value;
-        mobile.set_camera_tracking(vec3(3, -1, 3), vec3(0, 1, 0), index);
+        if (pendant.value) {
+            mobile.set_proj_ortho(-8, 8, -8, 8, -8, 8);
+            mobile.set_camera_tracking(vec3(3, -1, 3), vec3(0, 1, 0), pendant.value);
+        }
+    } else if (camera.selectedIndex === CAMERA_FIXED) {
+        if (pendant.value) {
+            mobile.set_proj_perspective(90, 1, 2, -4);
+            let dist = document.getElementById("Dist");
+            mobile.set_camera_fixed(vec3(3, -1, 3), vec3(0, 1, 0), pendant.value, dist.value)
+        }
     }
 }
 
@@ -52,7 +61,10 @@ function init_listeners() {
 
     camera.addEventListener("click", camera_mode_listener);
     let pendant = document.getElementById("PendantIndex");
-    pendant.oninput = camera_mode_listener
+    pendant.oninput = camera_mode_listener;
+
+    let dist = document.getElementById("Dist");
+    dist.onchange = camera_mode_listener;
 }
 
 

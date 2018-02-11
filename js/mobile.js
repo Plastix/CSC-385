@@ -294,7 +294,15 @@ class Mobile {
      *      Distance of camera from pendant.
      */
     set_camera_fixed(camera_pos, camera_up, i, dist) {
-        // IMPLEMENT ME!
+        if (i >= 0 && i < this.pendants.length) {
+            this.camera_mode = {
+                mode: CAMERA_FIXED,
+                pos: camera_pos,
+                up: camera_up,
+                index: i,
+                dist: dist
+            };
+        }
     }
 
     /**
@@ -336,7 +344,7 @@ class Mobile {
      * @param far
      */
     set_proj_perspective(fovy, aspect_ratio, near, far) {
-        this.project_mat = perspective(fovy, aspect, near, far);
+        this.project_mat = perspective(fovy, aspect_ratio, near, far);
     }
 
     /**
@@ -389,6 +397,32 @@ class Mobile {
             );
 
             this.view_mat = lookAt(this.camera_mode.pos, pos, this.camera_mode.up);
+        } else if (mode === CAMERA_FIXED) {
+            let index = this.camera_mode.index;
+            let object = this.pendants[index];
+
+            let transform = mat4();
+            while (object) {
+                transform = mult(object.transform_mat, transform);
+                transform = mult(translate(object.attach_point_parent, -object.height, 0), transform);
+                object = object.parent;
+            }
+            let origin = vec4(0, 0, this.camera_mode.dist, 1);
+            let pos = vec3(
+                dot(transform[0], origin),
+                dot(transform[1], origin),
+                dot(transform[2], origin),
+            );
+
+            origin = vec4(0, 0, 0, 1);
+            let at = vec3(
+                dot(transform[0], origin),
+                dot(transform[1], origin),
+                dot(transform[2], origin),
+            );
+
+            this.view_mat = lookAt(pos, at, this.camera_mode.up);
+
         }
     }
 
