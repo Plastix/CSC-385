@@ -416,13 +416,13 @@ class Mobile {
                 object = object.parent;
             }
 
-            let at = matMultVec3(transform, vec4(0, 0, 0, 1));
+            let at = mult(transform, vec4(0, 0, 0, 1));
             let pos = this.camera_mode.pos;
             if (mode === CAMERA_FIXED) {
-                pos = matMultVec3(transform, vec4(0, 0, this.camera_mode.dist, 1))
+                pos = mult(transform, vec4(0, 0, this.camera_mode.dist, 1))
             }
 
-            this.view_mat = lookAt(pos, at, this.camera_mode.up);
+            this.view_mat = lookAt(vec3(pos), vec3(at), this.camera_mode.up);
         }
     }
 

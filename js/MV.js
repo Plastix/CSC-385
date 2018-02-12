@@ -309,7 +309,7 @@ function mult( u, v )
         }
 
         for ( var i = 0; i < u.length; ++i ) {
-            result.push( u[i] * v[i] );
+            result.push(dot(u[i], v));
         }
 
         return result;
