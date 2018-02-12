@@ -15,7 +15,6 @@ const COLOR_RED = vec3(1.0, 0.0, 0.0);
 const COLOR_GREEN = vec3(0.0, 1.0, 0.0);
 const COLOR_BLUE = vec3(0.0, 0.0, 1.0);
 
-
 function enable_attribute_buffer(attrib, buffer, stride) {
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
     gl.vertexAttribPointer(attrib, stride, gl.FLOAT, false, 0, 0);

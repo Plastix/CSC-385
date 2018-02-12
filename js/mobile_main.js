@@ -38,7 +38,7 @@ function camera_mode_listener() {
     let pendant = document.getElementById("PendantIndex");
     if (camera.selectedIndex === CAMERA_FREE) {
         mobile.set_proj_ortho(-8, 8, -8, 8, -8, 8);
-        mobile.set_camera_free(vec3(3, -1, 3), vec3(0, 1, 0), vec3(3, -1, 3));
+        mobile.set_camera_free(vec3(3, -8, 3), vec3(0, 1, 0), vec3(3, -1, 3));
     } else if (camera.selectedIndex === CAMERA_TRACKING) {
         if (pendant.value) {
             mobile.set_proj_ortho(-8, 8, -8, 8, -8, 8);
@@ -86,7 +86,7 @@ function init() {
     init_listeners();
 
     mobile = new Mobile(vec4(0, 0, 0, 1), gl, program);
-    mobile.set_camera_free(vec3(3, -1, 3), vec3(0, 1, 0), vec3(3, -1, 3));
+    mobile.set_camera_free(vec3(3, -8, 3), vec3(0, 1, 0), vec3(3, -1, 3));
     mobile.set_proj_ortho(-8, 8, -8, 8, -8, 8);
 
     // Start rendering.
