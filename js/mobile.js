@@ -376,11 +376,10 @@ class Mobile {
         this.draw_mode = DRAW_FILL;
     }
 
-    updateCamera() {
+    update_camera() {
         let mode = this.camera_mode.mode;
-        if (mode === CAMERA_TRACKING) {
-            let index = this.camera_mode.index;
-            let object = this.pendants[index];
+        if (mode === CAMERA_FIXED || mode === CAMERA_TRACKING) {
+            let object = this.pendants[this.camera_mode.index];
 
             let transform = mat4();
             while (object) {
@@ -389,40 +388,13 @@ class Mobile {
                 object = object.parent;
             }
 
-            let origin = vec4(0, 0, 0, 1);
-            let pos = vec3(
-                dot(transform[0], origin),
-                dot(transform[1], origin),
-                dot(transform[2], origin),
-            );
-
-            this.view_mat = lookAt(this.camera_mode.pos, pos, this.camera_mode.up);
-        } else if (mode === CAMERA_FIXED) {
-            let index = this.camera_mode.index;
-            let object = this.pendants[index];
-
-            let transform = mat4();
-            while (object) {
-                transform = mult(object.transform_mat, transform);
-                transform = mult(translate(object.attach_point_parent, -object.height, 0), transform);
-                object = object.parent;
+            let at = matMultVec3(transform, vec4(0, 0, 0, 1));
+            let pos = this.camera_mode.pos;
+            if (mode === CAMERA_FIXED) {
+                pos = matMultVec3(transform, vec4(0, 0, this.camera_mode.dist, 1))
             }
-            let origin = vec4(0, 0, this.camera_mode.dist, 1);
-            let pos = vec3(
-                dot(transform[0], origin),
-                dot(transform[1], origin),
-                dot(transform[2], origin),
-            );
-
-            origin = vec4(0, 0, 0, 1);
-            let at = vec3(
-                dot(transform[0], origin),
-                dot(transform[1], origin),
-                dot(transform[2], origin),
-            );
 
             this.view_mat = lookAt(pos, at, this.camera_mode.up);
-
         }
     }
 
@@ -433,7 +405,7 @@ class Mobile {
         this.gl.useProgram(this.program);
 
         // Updates the view matrix for certain camera modes
-        this.updateCamera();
+        this.update_camera();
 
         // Set projection and view transformation for all objects.
         let PV_mat = mult(this.project_mat, this.view_mat);

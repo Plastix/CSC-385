@@ -41,3 +41,11 @@ function rotateY(theta) {
 function rotateZ(theta) {
     return rotate(theta, vec3(0.0, 0.0, 1.0));
 }
+
+function matMultVec3(matrix, point) {
+    return vec3(
+        dot(matrix[0], point),
+        dot(matrix[1], point),
+        dot(matrix[2], point),
+    );
+}
