@@ -4,6 +4,7 @@ const DRAW_FILL = 1;
 const CAMERA_FREE = 0;
 const CAMERA_TRACKING = 1;
 const CAMERA_FIXED = 2;
+const CAMERA_FLY = 3;
 
 // Constants for primary colors.
 const COLOR_WHITE = vec3(1.0, 1.0, 1.0);
