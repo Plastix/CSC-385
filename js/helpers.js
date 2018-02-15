@@ -41,3 +41,7 @@ function rotateY(theta) {
 function rotateZ(theta) {
     return rotate(theta, vec3(0.0, 0.0, 1.0));
 }
+
+function toRadians (angle) {
+    return angle * (Math.PI / 180);
+}
