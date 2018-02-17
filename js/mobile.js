@@ -43,6 +43,8 @@ class MobileObject {
         fill_buffer(this.line_buffer_color, [COLOR_BLACK, COLOR_BLACK]);
         enable_attribute_buffer(this.vPosition, this.line_buffer, 4);
         enable_attribute_buffer(this.vColor, this.line_buffer_color, 3);
+
+        M_mat = mult(M_mat, translate(this.attach_point_parent, -this.height, 0));
         this.gl.uniformMatrix4fv(this.mM, false, flatten(M_mat));
         this.gl.drawArrays(this.gl.LINES, 0, 2);
     }
@@ -66,6 +68,7 @@ class Rod extends MobileObject {
         this.transform_mat = mat4();
         this.transform_mat = mult(translate(-this.attach_point, 0, 0), this.transform_mat);
         this.transform_mat = mult(rotateY(this.angle), this.transform_mat);
+        this.transform_mat = mult(translate(this.attach_point_parent, -this.height, 0), this.transform_mat);
     }
 
     add_child(object) {
@@ -98,6 +101,7 @@ class Pendant extends MobileObject {
         this.transform_mat = mat4();
         this.transform_mat = mult(this.instance_mat, this.transform_mat);
         this.transform_mat = mult(rotateY(this.angle), this.transform_mat);
+        this.transform_mat = mult(translate(this.attach_point_parent, -this.height, 0), this.transform_mat);
     }
 
     draw(M_mat, draw_mode) {
@@ -371,7 +375,6 @@ class Mobile {
             let transform = mat4();
             while (object) {
                 transform = mult(object.transform_mat, transform);
-                transform = mult(translate(object.attach_point_parent, -object.height, 0), transform);
                 object = object.parent;
             }
 
@@ -400,9 +403,8 @@ class Mobile {
 
         (function render(object, M_mat) {
             if (object) {
-                // Update current transformation matrix
-                M_mat = mult(M_mat, translate(object.attach_point_parent, -object.height, 0));
                 object.draw_string(M_mat, this.root_pos);
+                // Update current transformation matrix
                 M_mat = mult(M_mat, object.transform_mat);
                 object.draw(M_mat, this.draw_mode);
 
