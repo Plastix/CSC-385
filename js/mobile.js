@@ -132,7 +132,6 @@ class Mobile {
         // Store global projection matrix. Is modified by set_proj functions.
         this.project_mat = mat4();
 
-        // TODO (Aidan) root of mobile - Make this a root a list
         this.root_rod = null;
     }
 
