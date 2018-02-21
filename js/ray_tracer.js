@@ -70,7 +70,8 @@ class RayTracer {
         this.objs = objs;
         this.lights = lights;
         this.background_color = background_color;
-        this.MAX_STEPS = 3;
+        // TODO (Aidan) change this
+        this.MAX_STEPS = 0;
     }
 
 
@@ -172,9 +173,11 @@ class RayTracer {
                 ray.pt = point;
                 ray.dir = l;
 
+                let col = this.check_collisions(ray);
                 // Only render light if not obstructed
-                if (this.check_collisions(ray).closest_t >= 0) {
-                    let attenuation = 1 / Math.pow(RayTracer.dist(point, light.pos), 2);
+                let lightDist = RayTracer.dist(point, light.pos);
+                if (col.closest_t < 0 || lightDist <= RayTracer.dist(col.closest_pt, point)) {
+                    let attenuation = 1 / Math.pow(lightDist, 2);
 
                     // Calculate diffuse component
                     let scale_diffuse = Math.max(dot(l, normal), 0) * attenuation;
@@ -182,7 +185,7 @@ class RayTracer {
                     result = add(result, diffuse);
 
                     // Calculate specular component
-                    let view = normalize(subtract(this.cam.eye, point));
+                    let view = normalize(subtract(ray_pt, point));
                     let scale_specular = Math.max(Math.pow(dot(reflect, view), object.alpha), 0) * attenuation;
                     let specular = scale(scale_specular, RayTracer.multComponent(object.ks, light.color));
                     result = add(result, specular);
