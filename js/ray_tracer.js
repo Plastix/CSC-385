@@ -70,7 +70,7 @@ class RayTracer {
         this.objs = objs;
         this.lights = lights;
         this.background_color = background_color;
-
+        this.MAX_STEPS = 3;
     }
 
 
@@ -97,21 +97,31 @@ class RayTracer {
 
                 // Generate ray from point and direction.
                 let r = new Ray(vec3(x, y, this.cam.eye[2]), dir);
-
-                let collision = this.check_collisions(r);
-
-                // No intersection so draw background color
-                if (collision.closest_t < 0) {
-                    this.pa.write_pixel(a, b, this.background_color);
-                } else {
-                    let normal = collision.closest_obj.normal(collision.closest_pt);
-                    let reflect = RayTracer.reflect(r.dir, normal);
-                    let color = this.phong(r.pt, collision.closest_pt, normal, reflect, collision.closest_obj);
-                    this.pa.write_pixel(a, b, color);
-                }
+                let color = this.trace(vec3(), r, 0);
+                this.pa.write_pixel(a, b, color);
             }
         }
+    }
 
+    trace(acc, ray, steps) {
+        if (steps > this.MAX_STEPS) {
+            return add(this.background_color, acc);
+        }
+
+        let collision = this.check_collisions(ray);
+        if (collision.closest_pt < 0) {
+            return add(this.background_color, acc);
+        }
+
+        let pt = collision.closest_pt;
+        let obj = collision.closest_obj;
+        let normal = obj.normal(pt);
+        let reflect = RayTracer.reflect(ray.dir, normal);
+        let local = this.phong(ray.pt, pt, normal, reflect, obj);
+        steps += 1;
+        ray.pt = pt;
+        ray.dir = reflect;
+        return this.trace(add(acc, local), ray, steps);
     }
 
 
