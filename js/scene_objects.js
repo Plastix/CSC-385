@@ -48,5 +48,13 @@ class SphereObject {
 
     }
 
+    /**
+     * Computes the vector normal to the specified point on the sphere.
+     * @param on_sphere {vec3} Point on sphere.
+     */
+    normal(on_sphere) {
+        return normalize(subtract(on_sphere, this.pt));
+    }
+
 
 }

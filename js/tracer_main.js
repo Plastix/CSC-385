@@ -86,12 +86,17 @@ function init() {
     objs.push(new SphereObject(vec3(-infty - 1, 0, 0), infty, scale(0.5, COLOR_RED), scale(0.5, COLOR_RED), COLOR_BLACK, 0));
     objs.push(new SphereObject(vec3(+infty + 1, 0, 0), infty, scale(0.5, COLOR_RED), scale(0.5, COLOR_RED), COLOR_BLACK, 0));
     // Two more spheres sitting on floor in room.
-    objs.push(new SphereObject(vec3(0.1, -1 + 0.25, -.7), 0.25, scale(0.5, COLOR_YELLOW), scale(0.1, COLOR_YELLOW), scale(0.4, COLOR_YELLOW), 1000));
-    objs.push(new SphereObject(vec3(-0.4, -1 + 0.3, -.4), 0.3, COLOR_WHITE, COLOR_BLACK, COLOR_BLACK, 0));
+    objs.push(new SphereObject(vec3(0.1, -1 + 0.25, -.7), 0.25, scale(0.5, COLOR_YELLOW), scale(0.1, COLOR_YELLOW), scale(0.4, COLOR_YELLOW), 250));
+    // objs.push(new SphereObject(vec3(-0.4, -1 + 0.3, -.4), 0.3, COLOR_WHITE, COLOR_BLACK, COLOR_BLACK, 0));
+    objs.push(new SphereObject(vec3(-0.4, -1 + 0.3, -.4), 0.3, scale(0.5, COLOR_WHITE), COLOR_WHITE, COLOR_BLACK, 0));
+
 
     // One ambient light.
     let lights = [];
     lights.push(new Light(COLOR_WHITE, null, AMBIENT_LIGHT));
+    lights.push(new Light(COLOR_WHITE, vec3(0, 3, 0), POINT_LIGHT));
+    lights.push(new Light(COLOR_WHITE, vec3(.1, -0.5, -0.1), POINT_LIGHT));
+    // lights.push(new Light(COLOR_WHITE, vec3(.1, 1, -0.7), POINT_LIGHT));
 
     // Initialize ray tracer to use the PixelArray, Camera and scene created.
     tracer = new RayTracer(pa, cam, objs, lights, COLOR_BLACK);

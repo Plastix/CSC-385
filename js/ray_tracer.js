@@ -132,20 +132,75 @@ class RayTracer {
                     }
                 }
 
-                // There's only one "light" and it's the hard coded ambient light.
-                let amb_light = this.lights[0].color;
-
-                // If we collided with a sphere draw it using only ambient lighting.
-                if (closest_t < 0)
+                // No intersection so draw background color
+                if (closest_t < 0) {
                     this.pa.write_pixel(a, b, this.background_color);
-                else
-                    this.pa.write_pixel(a, b, vec3(closest_obj.ka[0] * amb_light[0],
-                        closest_obj.ka[1] * amb_light[1],
-                        closest_obj.ka[2] * amb_light[2]));
+                } else {
+                    let normal = closest_obj.normal(closest_pt);
+                    let reflect = RayTracer.reflect(r.dir, normal);
+                    let color = this.phong(r.pt, closest_pt, normal, reflect, closest_obj);
+                    this.pa.write_pixel(a, b, color);
+                }
             }
         }
 
     }
 
+    /**
+     * Computes the reflection of a specified vector across the normal.
+     * @param vector {vec3} Assumed to be normalized
+     * @param normal {vec3} Assumed to be normalized
+     */
+    static reflect(vector, normal) {
+        return normalize(subtract(scale(2 * dot(vector, normal), normal), vector));
+    }
+
+    phong(ray_pt, point, normal, reflect, object) {
+        let result = vec3();
+        for (let light of this.lights) {
+            if (light.type === AMBIENT_LIGHT) {
+                result = add(result, RayTracer.multComponent(object.ka, light.color));
+            }
+            // TODO (Aidan) check if light is obstructed before computing diffuse and specular
+            else {
+                // Vector to light source
+                let l = normalize(subtract(light.pos, point));
+                let attenuation = 1 / Math.pow(RayTracer.dist(point, light.pos), 2);
+
+                // Calculate diffuse component
+                let sc = Math.max(dot(l, normal), 0);
+                let kd = scale(attenuation * sc, object.kd);
+                result = add(result, RayTracer.multComponent(kd, light.color));
+
+                // Calculate specular component
+                let view = normalize(subtract(this.cam.eye, point));
+                sc = Math.max(Math.pow(dot(reflect, view), object.alpha), 0);
+                let ks = scale(attenuation * sc, object.ks);
+                result = add(result, RayTracer.multComponent(ks, light.color));
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Calculates the distance between two points
+     * @param point1
+     * @param point2
+     * @returns {int}
+     */
+    static dist(point1, point2) {
+        return length(subtract(point2, point1))
+    }
+
+    /**
+     * Calculates component wise multiplication of vectors.
+     * @param vec1
+     * @param vec2
+     */
+    static multComponent(vec1, vec2) {
+        return vec3(vec1[0] * vec2[0],
+            vec1[1] * vec2[1],
+            vec1[2] * vec2[2])
+    }
 
 }
