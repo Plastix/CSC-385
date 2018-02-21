@@ -25,14 +25,11 @@ class Ray {
      */
     find_collision(sphere) {
         let to_sphere = subtract(sphere.pt, this.pt);
-
         let to_sphere_para = scale(dot(this.dir, to_sphere), this.dir);
-
         let to_sphere_perp = subtract(to_sphere, to_sphere_para);
 
         if (length(to_sphere_perp) < sphere.rad) {
             // There is at least one intersection.
-
             let closest_pt = add(sphere.pt, negate(to_sphere_perp));
             let dist_to_surface_along_dir = Math.sqrt(sphere.rad * sphere.rad
                 - length(to_sphere_perp) * length(to_sphere_perp));
@@ -46,16 +43,10 @@ class Ray {
                 pt = add(closest_pt, scale(-dist_to_surface_along_dir, this.dir));
                 t = length(subtract(pt, this.pt));
             }
-
             return [pt, t];
-
-
         }
-
         return null;
-
     }
-
 }
 
 
@@ -87,21 +78,12 @@ class RayTracer {
      * Performs ray tracing using the instance fields of this class.
      */
     ray_trace() {
-
-        // IMPLEMENT ME!
-        // Replace the code in this function to complete the ray
-        // tracing behavior required by the assignment.  The code currently
-        // present in this function is to demonstrate the interaction of
-        // various parts of the starter code.  You may want to use this example
-        // as a starting point and then slowly modify and extend it.
-
         // The clear the screen to render a new image.
         this.pa.clear_pixels();
 
         // Loop over the pixels that need to be render.
         for (let a = 0; a < this.pa.get_width(); a++) {
             for (let b = 0; b < this.pa.get_height(); b++) {
-
                 // Render the pixel at (a,b) in the PixelArray pa.
 
                 // Convert (a,b) to world coordinates of pixels using camera properties.
@@ -116,34 +98,47 @@ class RayTracer {
                 // Generate ray from point and direction.
                 let r = new Ray(vec3(x, y, this.cam.eye[2]), dir);
 
-                // Loop over the spheres in the scene and check for collisions with each.
-                // Remember the closest sphere collided with.
-                let closest_t = -1;
-                let closest_obj = null;
-                let closest_pt = null;
-                for (let i = 0; i < this.objs.length; i++) {
-                    let res = r.find_collision(this.objs[i]);
-                    if (res != null) {
-                        if (closest_t < 0 || closest_t > res[1]) {
-                            closest_t = res[1];
-                            closest_pt = res[0];
-                            closest_obj = this.objs[i];
-                        }
-                    }
-                }
+                let collision = this.check_collisions(r);
 
                 // No intersection so draw background color
-                if (closest_t < 0) {
+                if (collision.closest_t < 0) {
                     this.pa.write_pixel(a, b, this.background_color);
                 } else {
-                    let normal = closest_obj.normal(closest_pt);
+                    let normal = collision.closest_obj.normal(collision.closest_pt);
                     let reflect = RayTracer.reflect(r.dir, normal);
-                    let color = this.phong(r.pt, closest_pt, normal, reflect, closest_obj);
+                    let color = this.phong(r.pt, collision.closest_pt, normal, reflect, collision.closest_obj);
                     this.pa.write_pixel(a, b, color);
                 }
             }
         }
 
+    }
+
+
+    /**
+     * Loop over the spheres in the scene and check for collisions with each.
+     * Remember the closest sphere collided with.
+     * @param ray
+     * @returns {{}}
+     */
+    check_collisions(ray) {
+        let result = {
+            closest_t: -1,
+            closest_obj: null,
+            closest_pt: null
+        };
+
+        for (let i = 0; i < this.objs.length; i++) {
+            let res = ray.find_collision(this.objs[i]);
+            if (res != null) {
+                if (result.closest_t < 0 || result.closest_t > res[1]) {
+                    result.closest_t = res[1];
+                    result.closest_pt = res[0];
+                    result.closest_obj = this.objs[i];
+                }
+            }
+        }
+        return result;
     }
 
     /**
@@ -157,28 +152,34 @@ class RayTracer {
 
     phong(ray_pt, point, normal, reflect, object) {
         let result = vec3();
+        let ray = new Ray(vec3(), vec3());
         for (let light of this.lights) {
             if (light.type === AMBIENT_LIGHT) {
                 result = add(result, RayTracer.multComponent(object.ka, light.color));
-            }
-            // TODO (Aidan) check if light is obstructed before computing diffuse and specular
-            else {
+            } else if (light.type === POINT_LIGHT) {
                 // Vector to light source
                 let l = normalize(subtract(light.pos, point));
-                let attenuation = 1 / Math.pow(RayTracer.dist(point, light.pos), 2);
+                ray.pt = point;
+                ray.dir = l;
 
-                // Calculate diffuse component
-                let sc = Math.max(dot(l, normal), 0);
-                let kd = scale(attenuation * sc, object.kd);
-                result = add(result, RayTracer.multComponent(kd, light.color));
+                // Only render light if not obstructed
+                if (this.check_collisions(ray).closest_t >= 0) {
+                    let attenuation = 1 / Math.pow(RayTracer.dist(point, light.pos), 2);
 
-                // Calculate specular component
-                let view = normalize(subtract(this.cam.eye, point));
-                sc = Math.max(Math.pow(dot(reflect, view), object.alpha), 0);
-                let ks = scale(attenuation * sc, object.ks);
-                result = add(result, RayTracer.multComponent(ks, light.color));
+                    // Calculate diffuse component
+                    let scale_diffuse = Math.max(dot(l, normal), 0) * attenuation;
+                    let diffuse = scale(scale_diffuse, RayTracer.multComponent(object.kd, light.color));
+                    result = add(result, diffuse);
+
+                    // Calculate specular component
+                    let view = normalize(subtract(this.cam.eye, point));
+                    let scale_specular = Math.max(Math.pow(dot(reflect, view), object.alpha), 0) * attenuation;
+                    let specular = scale(scale_specular, RayTracer.multComponent(object.ks, light.color));
+                    result = add(result, specular);
+                }
             }
         }
+
         return result;
     }
 

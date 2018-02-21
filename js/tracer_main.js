@@ -94,7 +94,7 @@ function init() {
     // One ambient light.
     let lights = [];
     lights.push(new Light(COLOR_WHITE, null, AMBIENT_LIGHT));
-    lights.push(new Light(COLOR_WHITE, vec3(0, 3, 0), POINT_LIGHT));
+    // lights.push(new Light(COLOR_WHITE, vec3(0, 3, 0), POINT_LIGHT));
     lights.push(new Light(COLOR_WHITE, vec3(.1, -0.5, -0.1), POINT_LIGHT));
     // lights.push(new Light(COLOR_WHITE, vec3(.1, 1, -0.7), POINT_LIGHT));
 
