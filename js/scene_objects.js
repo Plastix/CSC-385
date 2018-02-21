@@ -1,4 +1,3 @@
-
 // Types of light sources.
 const AMBIENT_LIGHT = 0;
 const POINT_LIGHT = 1;
@@ -6,7 +5,7 @@ const POINT_LIGHT = 1;
 /**
  * A basic light source class.
  */
-class Light{
+class Light {
 
     /**
      * @param color {vec3} The color of the light.
@@ -14,12 +13,10 @@ class Light{
      * @param type {number} The type of light.  Currently only AMBIENT_LIGHT
      * and POINT_LIGHT supported.
      */
-    constructor(color, pos, type){
-
+    constructor(color, pos, type) {
         this.color = color;
         this.pos = pos;
         this.type = type;
-
     }
 
 }
@@ -42,7 +39,6 @@ class SphereObject {
      * @param alpha {number} Shininess
      */
     constructor(pt, rad, ka, kd, ks, alpha) {
-
         this.pt = pt;
         this.rad = rad;
         this.ka = ka;
