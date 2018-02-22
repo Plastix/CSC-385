@@ -23,7 +23,7 @@ function render() {
 
         pa.render();
 
-    }, 10);
+    }, 100);
 
 }
 
@@ -76,7 +76,7 @@ function init() {
     let at = vec3(0.5, -0.5, -0.5);
 
     // TODO (Aidan) add projecton type support
-    cam = new Camera(eye, up, at, 2 / PIXEL_WIDTH, 2 / PIXEL_HEIGHT, null);
+    cam = new Camera(eye, up, at, 2 / PIXEL_WIDTH, 2 / PIXEL_HEIGHT, PROJECTION_ORTHO, 1);
 
     // Set up scene
     let objs = [];
@@ -97,10 +97,9 @@ function init() {
     // One ambient light.
     let lights = [];
     lights.push(new Light(scale(0.5, COLOR_WHITE), null, AMBIENT_LIGHT));
-    // lights.push(new Light(COLOR_WHITE, vec3(0, 3, 0), POINT_LIGHT));
-    lights.push(new Light(COLOR_WHITE, vec3(.1, -1 + 0.25, -0.7), POINT_LIGHT)); // Light inside of sphere
-    // lights.push(new Light(COLOR_WHITE, vec3(.1, 0, -0.5), POINT_LIGHT));
-    // lights.push(new Light(COLOR_WHITE, vec3(.1, -.75, -0.7), POINT_LIGHT));
+    // lights.push(new Light(COLOR_WHITE, vec3(.1, -1 + 0.25, -0.7), POINT_LIGHT)); // Light inside of sphere
+    lights.push(new Light(COLOR_WHITE, vec3(0, 0, 0), POINT_LIGHT));
+    // lights.push(new Light(COLOR_WHITE, vec3(.9, 0, 0.9), POINT_LIGHT));
 
     // Initialize ray tracer to use the PixelArray, Camera and scene created.
     tracer = new RayTracer(pa, cam, objs, lights, COLOR_BLACK);

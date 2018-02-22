@@ -24,28 +24,46 @@ class Ray {
      * along the direction of this ray to the collision.
      */
     find_collision(sphere) {
+        let t;
+        let pt;
+        let dist_to_surface_along_dir;
+        let closest_pt_on_ray;
+        let to_sphere_perp;
+        let to_sphere_para;
         let to_sphere = subtract(sphere.pt, this.pt);
-        let to_sphere_para = scale(dot(this.dir, to_sphere), this.dir);
-        let to_sphere_perp = subtract(to_sphere, to_sphere_para);
 
-        if (length(to_sphere_perp) < sphere.rad) {
-            // There is at least one intersection.
-            let closest_pt = add(sphere.pt, negate(to_sphere_perp));
-            let dist_to_surface_along_dir = Math.sqrt(sphere.rad * sphere.rad
-                - length(to_sphere_perp) * length(to_sphere_perp));
-            let pt = null;
-            let t = 0;
-            if (length(to_sphere) < sphere.rad) {
-                // Start inside of sphere.
-                pt = add(closest_pt, scale(dist_to_surface_along_dir, this.dir));
-                t = length(subtract(pt, this.pt));
-            } else {
-                pt = add(closest_pt, scale(-dist_to_surface_along_dir, this.dir));
-                t = length(subtract(pt, this.pt));
-            }
+        if (length(to_sphere) <= sphere.rad) {
+            // Inside the sphere.  Must collide once to leave.
+
+            to_sphere_para = scale(dot(this.dir, to_sphere), this.dir);
+            to_sphere_perp = subtract(to_sphere, to_sphere_para);
+            closest_pt_on_ray = subtract(sphere.pt, to_sphere_perp);
+            dist_to_surface_along_dir = Math.sqrt(Math.pow(sphere.rad, 2) - Math.pow(length(to_sphere_perp), 2));
+            pt = add(closest_pt_on_ray, scale(dist_to_surface_along_dir, this.dir));
+            t = length(subtract(pt, this.pt));
             return [pt, t];
+
+        } else {
+            // Outside the sphere.
+            if (dot(this.dir, to_sphere) < 0) {
+                // Pointing away from sphere.  Cannot collide.
+                return null;
+            }
+
+            to_sphere_para = scale(dot(this.dir, to_sphere), this.dir);
+            to_sphere_perp = subtract(to_sphere, to_sphere_para);
+            if (length(to_sphere_perp) <= sphere.rad) {
+                // Collides at least once.
+                closest_pt_on_ray = subtract(sphere.pt, to_sphere_perp);
+                dist_to_surface_along_dir = Math.sqrt(Math.pow(sphere.rad, 2) - Math.pow(length(to_sphere_perp), 2));
+                pt = add(closest_pt_on_ray, scale(-dist_to_surface_along_dir, this.dir));
+                t = length(subtract(pt, this.pt));
+                return [pt, t];
+            } else {
+                // Does not collide.
+                return null;
+            }
         }
-        return null;
     }
 }
 
@@ -72,6 +90,7 @@ class RayTracer {
         this.background_color = background_color;
         // TODO (Aidan) change this
         this.MAX_STEPS = 0;
+        this.temp_ray = new Ray(vec3(), vec3());
     }
 
 
@@ -99,18 +118,17 @@ class RayTracer {
         }
 
         let collision = this.check_collisions(ray);
-        if (collision.closest_pt < 0) {
+        if (collision.closest_t < 0) {
             return add(this.background_color, acc);
         }
 
         let pt = collision.closest_pt;
         let obj = collision.closest_obj;
         let normal = obj.normal(pt);
-        let reflect = RayTracer.reflect(ray.dir, normal);
-        let local = this.phong(ray.pt, pt, normal, reflect, obj);
+        let local = this.phong(ray.pt, pt, normal, obj);
         steps += 1;
         ray.pt = pt;
-        ray.dir = reflect;
+        ray.dir = RayTracer.reflect(ray.dir, normal);
         return this.trace(add(acc, local), ray, steps);
     }
 
@@ -150,37 +168,37 @@ class RayTracer {
         return normalize(subtract(scale(2 * dot(vector, normal), normal), vector));
     }
 
-    phong(ray_pt, point, normal, reflect, object) {
+    phong(ray_pt, point, normal, object) {
         let result = vec3();
-        let ray = new Ray(vec3(), vec3());
         for (let light of this.lights) {
             if (light.type === AMBIENT_LIGHT) {
                 result = add(result, RayTracer.multComponent(object.ka, light.color));
             } else if (light.type === POINT_LIGHT) {
                 // Vector to light source
                 let l = normalize(subtract(light.pos, point));
-                ray.pt = point;
-                ray.dir = l;
-
-                let col = this.check_collisions(ray);
+                // if (dot(l, normal) >= 0) {
+                //     this.temp_ray.pt = point;
+                //     this.temp_ray.dir = l;
+                //     let col = this.check_collisions(this.temp_ray);
                 // Only render light if not obstructed
                 let lightDist = RayTracer.dist(point, light.pos);
-                if (col.closest_t < 0 || lightDist <= RayTracer.dist(col.closest_pt, point)) {
-                    let attenuation = 1 / Math.pow(lightDist, 2);
+                // if (col.closest_t < 0 || lightDist <= RayTracer.dist(col.closest_pt, point)) {
+                let attenuation = 1 / (1 + Math.pow(lightDist, 2));
 
-                    // Calculate diffuse component
-                    let scale_diffuse = Math.max(dot(l, normal), 0) * attenuation;
-                    let diffuse = scale(scale_diffuse, RayTracer.multComponent(object.kd, light.color));
-                    result = add(result, diffuse);
+                // Calculate diffuse component
+                let scale_diffuse = Math.max(dot(l, normal), 0) * attenuation;
+                let diffuse = scale(scale_diffuse, RayTracer.multComponent(object.kd, light.color));
+                result = add(result, diffuse);
 
-                    // TODO (Aidan) uncomment this
-                    // Calculate specular component
-                    // let view = normalize(subtract(ray_pt, point));
-                    // let scale_specular = Math.max(Math.pow(dot(reflect, view), object.alpha), 0) * attenuation;
-                    // let specular = scale(scale_specular, RayTracer.multComponent(object.ks, light.color));
-                    // result = add(result, specular);
-                }
+                // Calculate specular component
+                let view = normalize(subtract(ray_pt, point));
+                let reflect = RayTracer.reflect(l, normal);
+                let scale_specular = Math.max(Math.pow(dot(reflect, view), object.alpha), 0) * attenuation;
+                let specular = scale(scale_specular, RayTracer.multComponent(object.ks, light.color));
+                result = add(result, specular);
             }
+            // }
+            // }
         }
 
         return result;
