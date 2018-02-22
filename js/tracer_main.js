@@ -72,8 +72,11 @@ function init() {
 
     // Set up camera positioning
     let eye = vec3(0, 0, 0.5);
+    let up = vec3(0, 1, 0);
+    let at = vec3(0.5, -0.5, -0.5);
 
-    cam = new Camera(eye, 2 / PIXEL_WIDTH, 2 / PIXEL_HEIGHT);
+    // TODO (Aidan) add projecton type support
+    cam = new Camera(eye, up, at, 2 / PIXEL_WIDTH, 2 / PIXEL_HEIGHT, null);
 
     // Set up scene
     let objs = [];

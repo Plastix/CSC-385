@@ -83,23 +83,12 @@ class RayTracer {
         this.pa.clear_pixels();
 
         // Loop over the pixels that need to be render.
-        for (let a = 0; a < this.pa.get_width(); a++) {
-            for (let b = 0; b < this.pa.get_height(); b++) {
+        for (let x = 0; x < this.pa.get_width(); x++) {
+            for (let y = 0; y < this.pa.get_height(); y++) {
                 // Render the pixel at (a,b) in the PixelArray pa.
-
-                // Convert (a,b) to world coordinates of pixels using camera properties.
-                let x = this.cam.width_inc * (a + 0.5) - (this.pa.get_width() * this.cam.width_inc) / 2.0;
-                let y = this.cam.height_inc * (b + 0.5) - (this.pa.get_height() * this.cam.height_inc) / 2.0;
-
-                // Select a direction to point ray in.  The example is using a hard coded one
-                // that produces an oblique projection (the rays are parallel, but not perpendicular
-                // to plane of projection).
-                let dir = vec3(0.5, -0.5, -1);
-
-                // Generate ray from point and direction.
-                let r = new Ray(vec3(x, y, this.cam.eye[2]), dir);
-                let color = this.trace(vec3(), r, 0);
-                this.pa.write_pixel(a, b, color);
+                let ray = this.cam.get_ray(x, y, this.pa);
+                let color = this.trace(vec3(), ray, 0);
+                this.pa.write_pixel(x, y, color);
             }
         }
     }
@@ -184,11 +173,12 @@ class RayTracer {
                     let diffuse = scale(scale_diffuse, RayTracer.multComponent(object.kd, light.color));
                     result = add(result, diffuse);
 
+                    // TODO (Aidan) uncomment this
                     // Calculate specular component
-                    let view = normalize(subtract(ray_pt, point));
-                    let scale_specular = Math.max(Math.pow(dot(reflect, view), object.alpha), 0) * attenuation;
-                    let specular = scale(scale_specular, RayTracer.multComponent(object.ks, light.color));
-                    result = add(result, specular);
+                    // let view = normalize(subtract(ray_pt, point));
+                    // let scale_specular = Math.max(Math.pow(dot(reflect, view), object.alpha), 0) * attenuation;
+                    // let specular = scale(scale_specular, RayTracer.multComponent(object.ks, light.color));
+                    // result = add(result, specular);
                 }
             }
         }
