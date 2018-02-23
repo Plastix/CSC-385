@@ -44,16 +44,11 @@ class Camera {
 
         pixel_vec = mult(transform, pixel_vec);
 
-        let dir = null;
-        if (this.projection_type === PROJECTION_ORTHO) {
-            dir = v;
-        } else if (this.projection_type === PROJECTION_PERSPECTIVE) {
+        let dir = v;
+        if (this.projection_type === PROJECTION_PERSPECTIVE) {
             // Camera looks in -z direction
             let cop = add(scale(-this.projection_dist, v), this.eye);
-            cop = mult(transform, vec4(cop, 1));
-            dir = normalize(vec3(subtract(pixel_vec, cop)));
-        } else {
-            console.error("Unknown projection type!")
+            dir = normalize(subtract(vec3(pixel_vec), cop));
         }
 
         // Generate ray from point and direction.
