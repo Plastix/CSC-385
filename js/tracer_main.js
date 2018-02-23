@@ -72,9 +72,9 @@ function init() {
     pa.write_pixel(PIXEL_WIDTH - 1, 0, COLOR_WHITE);
 
     // Set up camera positioning
-    let eye = vec3(0, 0, 0.5);
+    let eye = vec3(0, 0, 0);
     let up = vec3(0, 1, 0);
-    let at = vec3(0.5, -0.5, -0.5);
+    let at = vec3(0.1, -1 + 0.25, -.7);
 
     // TODO (Aidan) add projecton type support
     cam = new Camera(eye, up, at, 2 / PIXEL_WIDTH, 2 / PIXEL_HEIGHT, PROJECTION_ORTHO, 1);

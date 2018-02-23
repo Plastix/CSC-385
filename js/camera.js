@@ -34,18 +34,24 @@ class Camera {
     get_ray(a, b) {
         // Pixels start at center
         let pixel_vec = vec4(a + 0.5, b + 0.5, this.eye[2], 1);
-        let transform = mult(translate(-1, -1, 0), scalem(this.width_inc, this.height_inc, 1));
-        pixel_vec = mult(transform, pixel_vec);
+        let v = normalize(subtract(this.at, this.eye)); // View plane normal
+        let n = normalize(cross(v, this.up)); // perpendicular vector
+        let u = normalize(cross(n, v)); // new up vector
 
-        let view_plane_normal = normalize(subtract(this.at, this.eye));
+        let cam_matrix = transpose(mat4(vec4(n, 0), vec4(u, 0), vec4(v, 0), vec4()));
+        let transform = mult(cam_matrix,
+            mult(translate(-1, -1, 0), scalem(this.width_inc, this.height_inc, 1)));
+
+        pixel_vec = mult(transform, pixel_vec);
 
         let dir = null;
         if (this.projection_type === PROJECTION_ORTHO) {
-            dir = view_plane_normal;
+            dir = v;
         } else if (this.projection_type === PROJECTION_PERSPECTIVE) {
             // Camera looks in -z direction
-            let cop = add(scale(-this.projection_dist, view_plane_normal), this.eye);
-            dir = normalize(subtract(new_vec, cop))
+            let cop = add(scale(-this.projection_dist, v), this.eye);
+            cop = mult(transform, vec4(cop, 1));
+            dir = normalize(vec3(subtract(pixel_vec, cop)));
         } else {
             console.error("Unknown projection type!")
         }
