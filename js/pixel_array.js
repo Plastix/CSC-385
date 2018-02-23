@@ -18,8 +18,8 @@ class PixelArray {
 
     /**
      *
-     * @param pixel_width {integer} The width of this array in pixels.
-     * @param pixel_height {integer} The height of this array in pixels.
+     * @param pixel_width {int} The width of this array in pixels.
+     * @param pixel_height {int} The height of this array in pixels.
      * @param glctxt {GLContext} The active GL context to render to.
      */
     constructor(pixel_width, pixel_height, glctxt) {
@@ -43,14 +43,14 @@ class PixelArray {
     }
 
     /**
-     * @returns {integer} The pixel width of this array.
+     * @returns {int} The pixel width of this array.
      */
     get_width() {
         return this.width;
     }
 
     /**
-     * @returns {integer} The pixel height of this array.
+     * @returns {int} The pixel height of this array.
      */
     get_height() {
         return this.height;
@@ -59,8 +59,8 @@ class PixelArray {
     /**
      * Sets a pixel to a color.
      *
-     * @param x {integer} An integer from [0, width).
-     * @param y {integer} An integer from [0, height).
+     * @param x {int} An integer from [0, width).
+     * @param y {int} An integer from [0, height).
      * @param color {vec3} Color to set pixel to.
      * @returns {number} Returns 0 if successful, -1 otherwise.
      */
@@ -162,9 +162,9 @@ class PixelArray {
 
     /**
      * Converts integer pixel coordinates to index in flatten array.
-     * @param x {integer} x coord
-     * @param y {integer} y coord
-     * @returns {integer} flat array index.
+     * @param x {int} x coord
+     * @param y {int} y coord
+     * @returns {int} flat array index.
      */
     //
     pixel_to_ix(x, y) {
