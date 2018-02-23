@@ -88,7 +88,8 @@ class RayTracer {
         this.objs = objs;
         this.lights = lights;
         this.background_color = background_color;
-        this.MAX_STEPS = 2;
+        // TODO (Aidan) change this back
+        this.MAX_STEPS = 0;
         this.temp_ray = new Ray(vec3(), vec3());
     }
 
@@ -104,7 +105,7 @@ class RayTracer {
         for (let x = 0; x < this.pa.get_width(); x++) {
             for (let y = 0; y < this.pa.get_height(); y++) {
                 // Render the pixel at (a,b) in the PixelArray pa.
-                let ray = this.cam.get_ray(x, y, this.pa);
+                let ray = this.cam.get_ray(x, y);
                 let color = this.trace(ray, 0, null);
                 this.pa.write_pixel(x, y, color);
             }

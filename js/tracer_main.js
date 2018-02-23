@@ -10,8 +10,9 @@ window.onload = init;
 // Note: You may want to changes these for more
 // detail or better performance when testing.
 // You may want to turn these into a UI slider.
-const PIXEL_WIDTH = 256;
-const PIXEL_HEIGHT = 256;
+// TODO (Aidan) change these back
+const PIXEL_WIDTH = 128;
+const PIXEL_HEIGHT = 128;
 
 // Size of HTML canvas
 const CANVAS_WIDTH = 512;
