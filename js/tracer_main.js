@@ -10,9 +10,8 @@ window.onload = init;
 // Note: You may want to changes these for more
 // detail or better performance when testing.
 // You may want to turn these into a UI slider.
-// TODO (Aidan) change these back
-const PIXEL_WIDTH = 128;
-const PIXEL_HEIGHT = 128;
+const PIXEL_WIDTH = 256;
+const PIXEL_HEIGHT = 256;
 
 // Size of HTML canvas
 const CANVAS_WIDTH = 512;
@@ -35,7 +34,8 @@ function clear_screen() {
 
 // Callback to start ray tracing.
 function start_trace() {
-    tracer.ray_trace();
+    let bounces = document.getElementById("bounces").value;
+    tracer.ray_trace(bounces);
 }
 
 // Install event listeners for UI elements.
@@ -48,6 +48,23 @@ function init_listeners() {
     let render_button = document.getElementById("RenderButton");
     render_button.addEventListener("click", start_trace);
 
+    ["cam-x", "cam-y", "cam-z", "cam-at-x", "cam-at-y", "cam-at-z", "cam-roll"].forEach(id => {
+        document.getElementById(id).onchange = camera_update_listener;
+    });
+}
+
+function camera_update_listener() {
+    let camX = document.getElementById("cam-x");
+    let camY = document.getElementById("cam-y");
+    let camZ = document.getElementById("cam-z");
+    let camAtX = document.getElementById("cam-at-x");
+    let camAtY = document.getElementById("cam-at-y");
+    let camAtZ = document.getElementById("cam-at-z");
+    let camRoll = document.getElementById("cam-roll");
+
+    cam.eye = vec3(parseFloat(camX.value), parseFloat(camY.value), parseFloat(camZ.value));
+    cam.at = vec3(parseFloat(camAtX.value), parseFloat(camAtY.value), parseFloat(camAtZ.value));
+    cam.up = vec3(mult(rotate(parseFloat(camRoll.value), vec3(0, 0, 1)), vec4(0, 1, 0, 0)));
 }
 
 function init() {

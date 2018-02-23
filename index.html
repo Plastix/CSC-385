@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
 
-    <script id="vertex-shader" type="x-shader/x-vertex">
+<script id="vertex-shader" type="x-shader/x-vertex">
         attribute vec4 vPosition;
         attribute vec4 vColor;
         uniform mat4 mModelView;
@@ -12,9 +12,11 @@
             fColor = vColor;
             gl_Position = mModelView * vPosition;
         }
-    </script>
 
-    <script id="fragment-shader" type="x-shader/x-fragment">
+
+</script>
+
+<script id="fragment-shader" type="x-shader/x-fragment">
         precision mediump float;
         varying vec4 fColor;
 
@@ -22,29 +24,47 @@
         {
           gl_FragColor = fColor;
         }
-    </script>
 
 
-    <script type="text/javascript" src="js/webgl-utils.js"></script>
-    <script type="text/javascript" src="js/initShaders.js"></script>
-    <script type="text/javascript" src="js/MV.js"></script>
-    <script type="text/javascript" src="js/tracer_main.js"></script>
-    <script type="text/javascript" src="js/pixel_array.js"></script>
-    <script type="text/javascript" src="js/ray_tracer.js"></script>
-    <script type="text/javascript" src="js/scene_objects.js"></script>
-    <script type="text/javascript" src="js/camera.js"></script>
+</script>
 
-    <body>
+<script type="text/javascript" src="js/webgl-utils.js"></script>
+<script type="text/javascript" src="js/initShaders.js"></script>
+<script type="text/javascript" src="js/MV.js"></script>
+<script type="text/javascript" src="js/tracer_main.js"></script>
+<script type="text/javascript" src="js/pixel_array.js"></script>
+<script type="text/javascript" src="js/ray_tracer.js"></script>
+<script type="text/javascript" src="js/scene_objects.js"></script>
+<script type="text/javascript" src="js/camera.js"></script>
 
-    <canvas id="gl-canvas" width="512" height="512">
-        Sorry; your browser doesn't support HTML5 canvas.
-    </canvas>
+<body>
 
-
-    <br>
-    <button id="RenderButton">Render!</button>
-    <button id="EraseButton">Erase</button>
+<canvas id="gl-canvas" width="512" height="512">
+    Sorry; your browser doesn't support HTML5 canvas.
+</canvas>
 
 
-    </body>
+<br>
+<button id="RenderButton">Render!</button>
+<button id="EraseButton">Erase</button>
+Bounces: <input id="bounces" type="number" value="1" min="0" max="5">
+<br>
+Camera Controls:
+<br>
+x: -1 <input id="cam-x" type="range" min="-1" max="1" step="0.01" value="0"> 1
+<br>
+y: -1 <input id="cam-y" type="range" min="-1" max="1" step="0.01" value="0"> 1
+<br>
+z: -1 <input id="cam-z" type="range" min="-1" max="1" step="0.01" value="0"> 1
+<br>
+at-x: -1 <input id="cam-at-x" type="range" min="-1" max="1" step="0.01" value="0"> 1
+<br>
+at-y: -1 <input id="cam-at-y" type="range" min="-1" max="1" step="0.01" value="0"> 1
+<br>
+at-z: -1 <input id="cam-at-z" type="range" min="-1" max="1" step="0.01" value="0"> 1
+<br>
+roll: 0 <input id="cam-roll" type="range" min="0" max="360" step="1" value="0"> 360
+
+Warning: Rendering breaks if at == eye!
+</body>
 </html>

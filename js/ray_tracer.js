@@ -88,8 +88,6 @@ class RayTracer {
         this.objs = objs;
         this.lights = lights;
         this.background_color = background_color;
-        // TODO (Aidan) change this back
-        this.MAX_STEPS = 0;
         this.temp_ray = new Ray(vec3(), vec3());
     }
 
@@ -97,7 +95,7 @@ class RayTracer {
     /**
      * Performs ray tracing using the instance fields of this class.
      */
-    ray_trace() {
+    ray_trace(max_bounces) {
         // The clear the screen to render a new image.
         this.pa.clear_pixels();
 
@@ -106,14 +104,14 @@ class RayTracer {
             for (let y = 0; y < this.pa.get_height(); y++) {
                 // Render the pixel at (a,b) in the PixelArray pa.
                 let ray = this.cam.get_ray(x, y);
-                let color = this.trace(ray, 0, null);
+                let color = this.trace(ray, 0, max_bounces, null);
                 this.pa.write_pixel(x, y, color);
             }
         }
     }
 
-    trace(ray, steps, ignore_obj) {
-        if (steps > this.MAX_STEPS) {
+    trace(ray, steps, bounces, ignore_obj) {
+        if (steps > bounces) {
             return this.background_color;
         }
 
@@ -129,7 +127,7 @@ class RayTracer {
         steps += 1;
         ray.pt = pt;
         ray.dir = RayTracer.reflect(ray.dir, normal);
-        let reflect = this.trace(ray, steps, obj);
+        let reflect = this.trace(ray, steps, bounces, obj);
         let scatter = RayTracer.multComponent(obj.kd, obj.ks);
         return add(RayTracer.multComponent(scatter, reflect), local);
     }
