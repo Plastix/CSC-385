@@ -106,18 +106,18 @@ class RayTracer {
             for (let y = 0; y < this.pa.get_height(); y++) {
                 // Render the pixel at (a,b) in the PixelArray pa.
                 let ray = this.cam.get_ray(x, y, this.pa);
-                let color = this.trace(vec3(), ray, 0);
+                let color = this.trace(vec3(), ray, 0, null);
                 this.pa.write_pixel(x, y, color);
             }
         }
     }
 
-    trace(acc, ray, steps) {
+    trace(acc, ray, steps, ignore_obj) {
         if (steps > this.MAX_STEPS) {
             return add(this.background_color, acc);
         }
 
-        let collision = this.check_collisions(ray);
+        let collision = this.check_collisions(ray, ignore_obj);
         if (collision.closest_t < 0) {
             return add(this.background_color, acc);
         }
@@ -129,7 +129,7 @@ class RayTracer {
         steps += 1;
         ray.pt = pt;
         ray.dir = RayTracer.reflect(ray.dir, normal);
-        return this.trace(add(acc, local), ray, steps);
+        return this.trace(add(acc, local), ray, steps, obj);
     }
 
 
@@ -137,9 +137,10 @@ class RayTracer {
      * Loop over the spheres in the scene and check for collisions with each.
      * Remember the closest sphere collided with.
      * @param ray
+     * @param ignore_obj sphere object to ignore collisions.
      * @returns {{}}
      */
-    check_collisions(ray) {
+    check_collisions(ray, ignore_obj) {
         let result = {
             closest_t: -1,
             closest_obj: null,
@@ -147,7 +148,13 @@ class RayTracer {
         };
 
         for (let i = 0; i < this.objs.length; i++) {
-            let res = ray.find_collision(this.objs[i]);
+            let obj = this.objs[i];
+            // Skip ignored object
+            if (obj === ignore_obj) {
+                continue;
+            }
+
+            let res = ray.find_collision(obj);
             if (res != null) {
                 if (result.closest_t < 0 || result.closest_t > res[1]) {
                     result.closest_t = res[1];
@@ -176,32 +183,36 @@ class RayTracer {
             } else if (light.type === POINT_LIGHT) {
                 // Vector to light source
                 let l = normalize(subtract(light.pos, point));
-                // if (dot(l, normal) >= 0) {
-                //     this.temp_ray.pt = point;
-                //     this.temp_ray.dir = l;
-                //     let col = this.check_collisions(this.temp_ray);
+                let light_dot = dot(l, normal);
+                let light_dist = RayTracer.dist(point, light.pos);
+
                 // Only render light if not obstructed
-                let lightDist = RayTracer.dist(point, light.pos);
-                // if (col.closest_t < 0 || lightDist <= RayTracer.dist(col.closest_pt, point)) {
-                let attenuation = 1 / (1 + Math.pow(lightDist, 2));
+                if (!this.is_obstructed(l, light_dist, light_dot, point, object)) {
+                    let attenuation = 1 / (1 + Math.pow(light_dist, 2));
 
-                // Calculate diffuse component
-                let scale_diffuse = Math.max(dot(l, normal), 0) * attenuation;
-                let diffuse = scale(scale_diffuse, RayTracer.multComponent(object.kd, light.color));
-                result = add(result, diffuse);
+                    // Calculate diffuse component
+                    let scale_diffuse = Math.max(light_dot, 0) * attenuation;
+                    let diffuse = scale(scale_diffuse, RayTracer.multComponent(object.kd, light.color));
+                    result = add(result, diffuse);
 
-                // Calculate specular component
-                let view = normalize(subtract(ray_pt, point));
-                let reflect = RayTracer.reflect(l, normal);
-                let scale_specular = Math.max(Math.pow(dot(reflect, view), object.alpha), 0) * attenuation;
-                let specular = scale(scale_specular, RayTracer.multComponent(object.ks, light.color));
-                result = add(result, specular);
+                    // Calculate specular component
+                    let view = normalize(subtract(ray_pt, point));
+                    let reflect = RayTracer.reflect(l, normal);
+                    let scale_specular = Math.pow(Math.max(dot(reflect, view), 0), object.alpha) * attenuation;
+                    let specular = scale(scale_specular, RayTracer.multComponent(object.ks, light.color));
+                    result = add(result, specular);
+                }
             }
-            // }
-            // }
         }
 
         return result;
+    }
+
+    is_obstructed(l, light_dist, light_dot, point, obj) {
+        this.temp_ray.pt = point;
+        this.temp_ray.dir = l;
+        let col = this.check_collisions(this.temp_ray, obj);
+        return light_dot < 0 || (col.closest_t > 0 && RayTracer.dist(col.closest_pt, point) <= light_dist);
     }
 
     /**

@@ -97,7 +97,7 @@ function init() {
     // One ambient light.
     let lights = [];
     lights.push(new Light(scale(0.5, COLOR_WHITE), null, AMBIENT_LIGHT));
-    // lights.push(new Light(COLOR_WHITE, vec3(.1, -1 + 0.25, -0.7), POINT_LIGHT)); // Light inside of sphere
+    lights.push(new Light(COLOR_WHITE, vec3(.1, -1 + 0.25, -0.7), POINT_LIGHT)); // Light inside of sphere
     lights.push(new Light(COLOR_WHITE, vec3(0, 0, 0), POINT_LIGHT));
     // lights.push(new Light(COLOR_WHITE, vec3(.9, 0, 0.9), POINT_LIGHT));
 
