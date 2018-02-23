@@ -88,8 +88,7 @@ class RayTracer {
         this.objs = objs;
         this.lights = lights;
         this.background_color = background_color;
-        // TODO (Aidan) change this
-        this.MAX_STEPS = 0;
+        this.MAX_STEPS = 2;
         this.temp_ray = new Ray(vec3(), vec3());
     }
 
@@ -106,20 +105,20 @@ class RayTracer {
             for (let y = 0; y < this.pa.get_height(); y++) {
                 // Render the pixel at (a,b) in the PixelArray pa.
                 let ray = this.cam.get_ray(x, y, this.pa);
-                let color = this.trace(vec3(), ray, 0, null);
+                let color = this.trace(ray, 0, null);
                 this.pa.write_pixel(x, y, color);
             }
         }
     }
 
-    trace(acc, ray, steps, ignore_obj) {
+    trace(ray, steps, ignore_obj) {
         if (steps > this.MAX_STEPS) {
-            return add(this.background_color, acc);
+            return this.background_color;
         }
 
         let collision = this.check_collisions(ray, ignore_obj);
         if (collision.closest_t < 0) {
-            return add(this.background_color, acc);
+            return this.background_color;
         }
 
         let pt = collision.closest_pt;
@@ -129,7 +128,9 @@ class RayTracer {
         steps += 1;
         ray.pt = pt;
         ray.dir = RayTracer.reflect(ray.dir, normal);
-        return this.trace(add(acc, local), ray, steps, obj);
+        let reflect = this.trace(ray, steps, obj);
+        let scatter = RayTracer.multComponent(obj.kd, obj.ks);
+        return add(RayTracer.multComponent(scatter, reflect), local);
     }
 
 
@@ -217,9 +218,9 @@ class RayTracer {
 
     /**
      * Calculates the distance between two points
-     * @param point1
+     * @param  point1
      * @param point2
-     * @returns {int}
+     * @returns {int} Distance
      */
     static dist(point1, point2) {
         return length(subtract(point2, point1))
@@ -227,8 +228,8 @@ class RayTracer {
 
     /**
      * Calculates component wise multiplication of vectors.
-     * @param vec1
-     * @param vec2
+     * @param {vec3} vec1
+     * @param {vec3} vec2
      */
     static multComponent(vec1, vec2) {
         return vec3(vec1[0] * vec2[0],
