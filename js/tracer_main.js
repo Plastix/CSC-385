@@ -38,6 +38,10 @@ function start_trace() {
     tracer.ray_trace(bounces);
 }
 
+function camera_mode_listener() {
+    cam.projection_type = this.selectedIndex;
+}
+
 // Install event listeners for UI elements.
 function init_listeners() {
 
@@ -51,6 +55,9 @@ function init_listeners() {
     ["cam-x", "cam-y", "cam-z", "cam-at-x", "cam-at-y", "cam-at-z", "cam-roll"].forEach(id => {
         document.getElementById(id).onchange = camera_update_listener;
     });
+
+    let camera_mode = document.getElementById("CameraMode");
+    camera_mode.addEventListener("click", camera_mode_listener);
 }
 
 function camera_update_listener() {
@@ -64,7 +71,7 @@ function camera_update_listener() {
 
     cam.eye = vec3(parseFloat(camX.value), parseFloat(camY.value), parseFloat(camZ.value));
     cam.at = vec3(parseFloat(camAtX.value), parseFloat(camAtY.value), parseFloat(camAtZ.value));
-    cam.up = vec3(mult(rotate(parseFloat(camRoll.value), vec3(0, 0, 1)), vec4(0, 1, 0, 0)));
+    cam.up = vec3(mult(rotate(parseFloat(camRoll.value), vec3(0, 0, 1)), vec4(cam.up)));
 }
 
 function init() {
