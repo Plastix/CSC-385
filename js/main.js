@@ -11,11 +11,19 @@ const geometry = new THREE.BoxGeometry(1, 1, 1);
 const material = new THREE.MeshPhongMaterial({
     color: 0x00ff00,
     emissive: 0x00aa00,
-    specular: 0x111111,
+    specular: 0x111111
 });
 
 const cube = new THREE.Mesh(geometry, material);
+cube.position.y = 0.5;
 scene.add(cube);
+
+const plane = new THREE.Mesh(
+    new THREE.PlaneGeometry(10, 10, 1, 1),
+    new THREE.MeshBasicMaterial({color: 0xaaaaaa})
+);
+plane.rotateX(-Math.PI / 2);
+scene.add(plane);
 
 const light = new THREE.PointLight(0xffffff, 10, 100);
 light.position.set(5, 5, 0);
