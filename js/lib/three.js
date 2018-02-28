@@ -24110,7 +24110,7 @@
 					// apply values
 
 					bone.name = gbone.name;
-					bone.position.fromArray( gbone.pos );
+					bone.position.fromArray( gbone.p );
 					bone.quaternion.fromArray( gbone.rotq );
 					if ( gbone.scl !== undefined ) bone.scale.fromArray( gbone.scl );
 
@@ -35217,7 +35217,7 @@
 
 					addNonemptyTrack(
 						VectorKeyframeTrack, boneName + '.position',
-						animationKeys, 'pos', tracks );
+						animationKeys, 'p', tracks );
 
 					addNonemptyTrack(
 						QuaternionKeyframeTrack, boneName + '.quaternion',
