@@ -37,6 +37,7 @@ class Emitter {
         this.PARTICLE_LIFESPAN = 2;
         this.PARTICLE_GRAVITY = -0.5;
         this.clock = new THREE.Clock();
+        this.time = 0;
 
         this.geo = new THREE.BufferGeometry();
         this.mat = new THREE.ShaderMaterial({
@@ -64,12 +65,14 @@ class Emitter {
     }
 
     update() {
-        let dt = this.clock.getDelta();
+        this.time += this.clock.getDelta();
 
         let i = 0;
         for (let particle of this.particles) {
-            particle.p =(particle.p.add(particle.v.multiplyScalar(dt)))
-                .add(particle.a.multiplyScalar(1 / 2).multiplyScalar(Math.pow(dt, 2)));
+            let vt = particle.v.multiplyScalar(this.time);
+            let p = particle.p.add(vt);
+            let at = particle.a.multiplyScalar(1 / 2 * Math.pow(this.time, 2));
+            particle.p = p.add(at);
 
             this.positions[i++] = particle.p.x;
             this.positions[i++] = particle.p.y;
