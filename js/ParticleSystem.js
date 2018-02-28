@@ -9,6 +9,7 @@ let vertex_shader = [
     'void main() {',
     'vColor = vec3(1.0,1.0,1.0);',
     'gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+    'gl_PointSize = 10.0;',
     '}'
 ].join('\n');
 
@@ -34,10 +35,23 @@ class Emitter {
     }
 
     init_buffers() {
+        this.positions = new Float32Array(this.MAX_PARTICLES * 3);
 
+        for (let i = 0; i < this.MAX_PARTICLES; i++) {
+            this.positions[i] = getRandomArbitrary(-10, 10);
+        }
+
+        let buf = new THREE.BufferAttribute(this.positions, 3, false);
+        this.geo.addAttribute("position", buf);
+
+        buf.needsUpdate = true;
     }
 
     init_object3d() {
         return new THREE.Points(this.geo, this.mat);
     }
+}
+
+function getRandomArbitrary(min, max) {
+    return Math.random() * (max - min) + min;
 }
