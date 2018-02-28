@@ -26,7 +26,9 @@ plane.rotateX(-Math.PI / 2);
 scene.add(plane);
 
 let emitter = new Emitter();
-scene.add(emitter.init_object3d());
+let emitter_obj = emitter.get_object3D();
+scene.add(emitter_obj);
+emitter_obj.position.y = 1;
 
 // const light = new THREE.PointLight(0xffffff, 10, 100);
 // light.position.set(5, 5, 0);
@@ -38,11 +40,21 @@ const stats = new Stats();
 stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
 document.body.appendChild(stats.dom);
 
+function onWindowResize() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+window.addEventListener("resize", onWindowResize, false);
+
 const animate = function () {
     renderer.render(scene, camera);
     stats.update();
     controls.update();
+    emitter.update();
     requestAnimationFrame(animate);
 };
 
 requestAnimationFrame(animate);
+
