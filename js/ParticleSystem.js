@@ -14,10 +14,13 @@ let vertex_shader = `
 `;
 
 let fragment_shader = `
+    uniform sampler2D texture;
+    
     varying vec3 vColor;
     
     void main() {
         gl_FragColor = vec4(vColor, 1.0);
+        gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );
     }
 `;
 
@@ -41,10 +44,18 @@ class Emitter {
         this.clock = new THREE.Clock();
         this.time = 0;
 
+        let uniforms = {
+            texture: {value: new THREE.TextureLoader().load("textures/sprites/spark1.png")}
+        };
+
         this.geo = new THREE.BufferGeometry();
         this.mat = new THREE.ShaderMaterial({
+            uniforms: uniforms,
             vertexShader: vertex_shader,
-            fragmentShader: fragment_shader
+            fragmentShader: fragment_shader,
+            blending: THREE.AdditiveBlending,
+            transparent: true,
+            vertexColors: true
         });
         this.object3D = new THREE.Points(this.geo, this.mat);
         this.init_particles();
