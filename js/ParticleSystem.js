@@ -3,21 +3,23 @@
 //
 // }
 
-let vertex_shader = [
-    'varying vec3 vColor;',
-    'void main() {',
-    'vColor = vec3(1.0,1.0,1.0);',
-    'gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
-    'gl_PointSize = 10.0;',
-    '}'
-].join('\n');
+let vertex_shader = `
+    varying vec3 vColor;
+    
+    void main() {
+        vColor = vec3(1.0, 1.0, 1.0);
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        gl_PointSize = 10.0;
+    }
+`;
 
-let fragment_shader = [
-    'varying vec3 vColor;',
-    'void main() {',
-    'gl_FragColor = vec4(vColor, 1.0);',
-    '}'
-].join('\n');
+let fragment_shader = `
+    varying vec3 vColor;
+    
+    void main() {
+        gl_FragColor = vec4(vColor, 1.0);
+    }
+`;
 
 class Particle {
     constructor(pos, m, v, a) {
