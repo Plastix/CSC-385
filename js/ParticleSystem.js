@@ -52,7 +52,12 @@ class Emitter {
     init_particles() {
         this.particles = [];
         for (let i = 0; i < this.MAX_PARTICLES; i++) {
-            this.particles.push(new Particle(this.object3D.position, 0,
+            this.particles.push(new Particle(
+                this.object3D.position.clone().add(new THREE.Vector3(
+                    getRandomArbitrary(-10, 10),
+                    getRandomArbitrary(-10, 10),
+                    getRandomArbitrary(-10, 10))),
+                0,
                 new THREE.Vector3(0, 0, 0),
                 new THREE.Vector3(0, this.PARTICLE_GRAVITY, 0)));
         }
@@ -69,9 +74,9 @@ class Emitter {
 
         let i = 0;
         for (let particle of this.particles) {
-            let vt = particle.v.multiplyScalar(this.time);
-            let p = particle.p.add(vt);
-            let at = particle.a.multiplyScalar(1 / 2 * Math.pow(this.time, 2));
+            let vt = particle.v.clone().multiplyScalar(this.time);
+            let p = particle.p.clone().add(vt);
+            let at = particle.a.clone().multiplyScalar(1 / 2 * Math.pow(this.time, 2));
             particle.p = p.add(at);
 
             this.positions[i++] = particle.p.x;
