@@ -9,7 +9,7 @@ let vertex_shader = `
     void main() {
         vColor = vec3(1.0, 1.0, 1.0);
         gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-        gl_PointSize = 10.0;
+        gl_PointSize = 50.0;
     }
 `;
 
@@ -54,6 +54,8 @@ class Emitter {
             vertexShader: vertex_shader,
             fragmentShader: fragment_shader,
             blending: THREE.AdditiveBlending,
+            depthTest: true,
+            depthWrite: false,
             transparent: true,
             vertexColors: true
         });
