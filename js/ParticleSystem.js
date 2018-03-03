@@ -59,26 +59,19 @@ class ParticleSystem {
             vertexColors: true
         });
         this.object3D = new THREE.Points(this.geo, this.mat);
-        this.init_particles();
         this.init_buffers();
-    }
-
-    init_particles() {
         this.particles = [];
-
-        // TODO MOVE THIS
-        for (let i = 0; i < 500; i++) {
-            this.spawn_particle(new Particle(
-                this.object3D.position.clone(),
-                0,
-                new THREE.Vector3(getRandomArbitrary(-1, 1), getRandomArbitrary(0, 1), getRandomArbitrary(-1, 1)),
-                new THREE.Vector3(0, PARTICLE_GRAVITY, 0),
-                0.4));
-        }
+        this.emitters = [];
     }
 
     spawn_particle(particle) {
-        this.particles.push(particle);
+        if (this.particles.length < this.MAX_PARTICLES) {
+            this.particles.push(particle);
+        }
+    }
+
+    add_emitter(emitter) {
+        this.emitters.push(emitter);
     }
 
     init_buffers() {
@@ -90,19 +83,25 @@ class ParticleSystem {
         let dt = this.clock.getDelta();
         this.time += dt;
 
+        for (let emitter of this.emitters) {
+            emitter.update(dt);
+        }
+
+        let new_particles = [];
         for (let i = 0; i < this.particles.length; i++) {
             let particle = this.particles[i];
             let v = particle.v.clone();
             let p = particle.p.clone();
             let a = particle.a.clone();
-            particle.p = p.add(v.multiplyScalar(this.time))
-                .add(a.multiplyScalar(1 / 2 * Math.pow(this.time, 2)));
             particle.age += dt;
+            particle.p = p.add(v.multiplyScalar(particle.age))
+                .add(a.multiplyScalar(1 / 2 * Math.pow(particle.age, 2)));
 
-            if (particle.is_dead()) {
-                this.particles.splice(i, i);
+            if (!particle.is_dead()) {
+                new_particles.push(particle);
             }
         }
+        this.particles = new_particles;
     }
 
     render() {
@@ -132,9 +131,23 @@ class ParticleSystem {
 
 class Emitter {
 
-    constructor() {
+    constructor(system, location, spawn_rate, lifespan) {
         // Emitter params
-        
+        this.system = system;
+        this.location = location;
+        this.spawn_rate = spawn_rate;
+        this.lifespan = lifespan;
+
+    }
+
+    update(dt) {
+        // TODO Actually spawn at spawn rate
+        this.system.spawn_particle(new Particle(
+            new THREE.Vector3(0, 0, 0),
+            0,
+            new THREE.Vector3(getRandomArbitrary(-0.2, 0.2), getRandomArbitrary(0, 0.3), getRandomArbitrary(-0.2, 0.2)),
+            new THREE.Vector3(0, PARTICLE_GRAVITY, 0),
+            1));
     }
 
 }

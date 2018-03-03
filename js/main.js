@@ -30,6 +30,8 @@ let system_obj = system.get_object3D();
 scene.add(system_obj);
 system_obj.position.y = 1;
 
+system.add_emitter(new Emitter(system, system_obj.position, 0, 0));
+
 // const light = new THREE.PointLight(0xffffff, 10, 100);
 // light.position.set(5, 5, 0);
 // scene.add(light);
