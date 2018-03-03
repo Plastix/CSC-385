@@ -25,10 +25,10 @@ const plane = new THREE.Mesh(
 plane.rotateX(-Math.PI / 2);
 scene.add(plane);
 
-let emitter = new Emitter();
-let emitter_obj = emitter.get_object3D();
-scene.add(emitter_obj);
-emitter_obj.position.y = 1;
+let system = new ParticleSystem();
+let system_obj = system.get_object3D();
+scene.add(system_obj);
+system_obj.position.y = 1;
 
 // const light = new THREE.PointLight(0xffffff, 10, 100);
 // light.position.set(5, 5, 0);
@@ -53,7 +53,7 @@ const animate = function () {
     renderer.render(scene, camera);
     stats.update();
     controls.update();
-    emitter.update();
+    system.render();
     requestAnimationFrame(animate);
 };
 

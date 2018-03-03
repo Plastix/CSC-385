@@ -1,8 +1,3 @@
-// class ParticleSystem {
-//
-//
-// }
-
 let vertex_shader = `
     varying vec3 vColor;
     
@@ -24,23 +19,27 @@ let fragment_shader = `
     }
 `;
 
+const PARTICLE_GRAVITY = -0.5;
+
 class Particle {
-    constructor(pos, m, v, a) {
+    constructor(pos, m, v, a, lifespan) {
         this.p = pos;
         this.m = m;
         this.v = v;
         this.a = a;
+        this.age = 0;
+        this.lifespan = lifespan;
+    }
+
+    is_dead() {
+        return this.age > this.lifespan;
     }
 }
 
-class Emitter {
+class ParticleSystem {
 
     constructor() {
-        // Emitter params
-        // TODO (Aidan/Jerry) Don't hardcode these
-        this.MAX_PARTICLES = 1000;
-        this.PARTICLE_LIFESPAN = 2;
-        this.PARTICLE_GRAVITY = -0.5;
+        this.MAX_PARTICLES = 10000;
         this.clock = new THREE.Clock();
         this.time = 0;
 
@@ -66,35 +65,60 @@ class Emitter {
 
     init_particles() {
         this.particles = [];
-        for (let i = 0; i < this.MAX_PARTICLES; i++) {
-            this.particles.push(new Particle(
+
+        // TODO MOVE THIS
+        for (let i = 0; i < 500; i++) {
+            this.spawn_particle(new Particle(
                 this.object3D.position.clone(),
                 0,
                 new THREE.Vector3(getRandomArbitrary(-1, 1), getRandomArbitrary(0, 1), getRandomArbitrary(-1, 1)),
-                new THREE.Vector3(0, this.PARTICLE_GRAVITY, 0)));
+                new THREE.Vector3(0, PARTICLE_GRAVITY, 0),
+                0.4));
         }
     }
 
+    spawn_particle(particle) {
+        this.particles.push(particle);
+    }
+
     init_buffers() {
-        this.positions = new Float32Array(this.MAX_PARTICLES * 3);
-        this.pos_buffer = new THREE.BufferAttribute(this.positions, 3).setDynamic(true);
+        this.pos_buffer = new THREE.BufferAttribute(new Float32Array(this.MAX_PARTICLES * 3), 3).setDynamic(true);
         this.geo.addAttribute("position", this.pos_buffer);
     }
 
     update() {
-        this.time += this.clock.getDelta();
+        let dt = this.clock.getDelta();
+        this.time += dt;
 
-        let i = 0;
-        for (let particle of this.particles) {
+        for (let i = 0; i < this.particles.length; i++) {
+            let particle = this.particles[i];
             let v = particle.v.clone();
             let p = particle.p.clone();
             let a = particle.a.clone();
             particle.p = p.add(v.multiplyScalar(this.time))
                 .add(a.multiplyScalar(1 / 2 * Math.pow(this.time, 2)));
+            particle.age += dt;
 
-            this.positions[i++] = particle.p.x;
-            this.positions[i++] = particle.p.y;
-            this.positions[i++] = particle.p.z;
+            if (particle.is_dead()) {
+                this.particles.splice(i, i);
+            }
+        }
+    }
+
+    render() {
+        this.update();
+        this.updateBuffers();
+        this.geo.setDrawRange(0, this.particles.length);
+    }
+
+    updateBuffers() {
+        let j = 0;
+        for (let i = 0; i < this.particles.length; i++) {
+            let particle = this.particles[i];
+            this.pos_buffer.array[j++] = particle.p.x;
+            this.pos_buffer.array[j++] = particle.p.y;
+            this.pos_buffer.array[j++] = particle.p.z;
+
         }
 
         this.pos_buffer.needsUpdate = true;
@@ -103,6 +127,16 @@ class Emitter {
     get_object3D() {
         return this.object3D;
     }
+}
+
+
+class Emitter {
+
+    constructor() {
+        // Emitter params
+        
+    }
+
 }
 
 
