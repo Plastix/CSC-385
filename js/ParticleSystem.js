@@ -143,7 +143,7 @@ class Emitter {
     update(dt) {
         // TODO Actually spawn at spawn rate
         this.system.spawn_particle(new Particle(
-            new THREE.Vector3(0, 0, 0),
+            this.location.clone(),
             0,
             new THREE.Vector3(getRandomArbitrary(-0.2, 0.2), getRandomArbitrary(0, 0.3), getRandomArbitrary(-0.2, 0.2)),
             new THREE.Vector3(0, PARTICLE_GRAVITY, 0),
