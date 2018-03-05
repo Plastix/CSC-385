@@ -7,17 +7,6 @@ document.body.appendChild(renderer.domElement);
 
 let controls = new THREE.OrbitControls(camera, renderer.domElement);
 
-// const geometry = new THREE.BoxGeometry(1, 1, 1);
-// const material = new THREE.MeshPhongMaterial({
-//     color: 0x00ff00,
-//     emissive: 0x00aa00,
-//     specular: 0x111111
-// });
-//
-// const cube = new THREE.Mesh(geometry, material);
-// cube.position.y = 0.5;
-// scene.add(cube);
-
 const plane = new THREE.Mesh(
     new THREE.PlaneGeometry(10, 10, 1, 1),
     new THREE.MeshBasicMaterial({color: 0xaaaaaa})
@@ -29,12 +18,6 @@ let system = new ParticleSystem();
 let system_obj = system.get_object3D();
 scene.add(system_obj);
 system_obj.position.y = 1;
-
-// system.add_emitter(new Emitter(system, system_obj.position, 0, 0));
-
-// const light = new THREE.PointLight(0xffffff, 10, 100);
-// light.position.set(5, 5, 0);
-// scene.add(light);
 
 camera.position.z = 5;
 camera.position.y = 3;
@@ -62,7 +45,7 @@ const animate = function () {
 requestAnimationFrame(animate);
 
 let raycaster = new THREE.Raycaster();
-let mouse = new THREE.Vector2();
+let mouse = new THREE.Vector2(0, 0);
 
 function onMouseMove(event) {
 
@@ -72,7 +55,7 @@ function onMouseMove(event) {
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 }
 
-function onMouseClick(event) {
+function onMouseClick() {
     // update the picking ray with the camera and mouse position
     raycaster.setFromCamera(mouse, camera);
 
@@ -81,11 +64,12 @@ function onMouseClick(event) {
 
     for (let i = 0; i < intersects.length; i++) {
         let col = intersects[i];
-        if (col.object === system) {
+        if (col.object === system_obj) {
             continue;
         }
         let pos = col.point;
-        system.add_emitter(new Emitter(system, pos, 0, 0))
+        system.add_emitter(new Emitter(system, pos, 0, 0));
+        break;
 
     }
 
