@@ -41,7 +41,6 @@ class ParticleSystem {
     constructor() {
         this.MAX_PARTICLES = 10000;
         this.clock = new THREE.Clock();
-        this.time = 0;
 
         let uniforms = {
             texture: {value: new THREE.TextureLoader().load("textures/sprites/spark1.png")}
@@ -79,15 +78,20 @@ class ParticleSystem {
         this.geo.addAttribute("position", this.pos_buffer);
     }
 
+    render() {
+        this.update();
+        this.updateBuffers();
+        this.geo.setDrawRange(0, this.particles.length);
+    }
+
     update() {
         let dt = this.clock.getDelta();
-        this.time += dt;
+        this.update_emitters(dt);
+        this.update_particles(dt);
+    }
 
-        for (let emitter of this.emitters) {
-            emitter.update(dt);
-        }
-
-        let new_particles = [];
+    update_particles(dt) {
+        let particles = [];
         for (let i = 0; i < this.particles.length; i++) {
             let particle = this.particles[i];
             let v = particle.v.clone();
@@ -98,16 +102,23 @@ class ParticleSystem {
                 .add(a.multiplyScalar(1 / 2 * Math.pow(particle.age, 2)));
 
             if (!particle.is_dead()) {
-                new_particles.push(particle);
+                particles.push(particle);
             }
         }
-        this.particles = new_particles;
+        this.particles = particles;
     }
 
-    render() {
-        this.update();
-        this.updateBuffers();
-        this.geo.setDrawRange(0, this.particles.length);
+    update_emitters(dt) {
+        let emitters = [];
+        for (let i = 0; i < this.emitters.length; i++) {
+            let emitter = this.emitters[i];
+            emitter.update(dt);
+
+            if (!emitter.is_dead()) {
+                emitters.push(emitter);
+            }
+        }
+        this.emitters = emitters;
     }
 
     updateBuffers() {
@@ -137,10 +148,13 @@ class Emitter {
         this.location = location;
         this.spawn_rate = spawn_rate;
         this.lifespan = lifespan;
+        this.age = 0;
 
     }
 
     update(dt) {
+        this.age += dt;
+
         // TODO Actually spawn at spawn rate
         this.system.spawn_particle(new Particle(
             this.location.clone(),
@@ -148,6 +162,10 @@ class Emitter {
             new THREE.Vector3(getRandomArbitrary(-0.2, 0.2), getRandomArbitrary(0, 0.3), getRandomArbitrary(-0.2, 0.2)),
             new THREE.Vector3(0, PARTICLE_GRAVITY, 0),
             1));
+    }
+
+    is_dead() {
+        return this.age > this.lifespan;
     }
 
 }
