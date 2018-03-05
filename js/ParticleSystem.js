@@ -1,34 +1,37 @@
 let vertex_shader = `
-    varying vec3 vColor;
+    attribute float size;
+    varying vec4 vColor;
     
     void main() {
-        vColor = vec3(1.0, 1.0, 1.0);
+        vColor = vec4(1.0, 1.0, 1.0, 1.0);
         gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-        gl_PointSize = 50.0;
+        gl_PointSize = size;
     }
 `;
 
 let fragment_shader = `
     uniform sampler2D texture;
     
-    varying vec3 vColor;
+    varying vec4 vColor;
     
     void main() {
-        gl_FragColor = vec4(vColor, 1.0);
-        gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );
+        gl_FragColor = vColor;
+        gl_FragColor = gl_FragColor * texture2D(texture, gl_PointCoord);
     }
 `;
 
 const PARTICLE_GRAVITY = -0.5;
 
 class Particle {
-    constructor(pos, m, v, a, lifespan) {
+    constructor(pos, m, v, a, lifespan, max_size, min_size) {
         this.p = pos;
         this.m = m;
         this.v = v;
         this.a = a;
         this.age = 0;
         this.lifespan = lifespan;
+        this.max_size = max_size;
+        this.min_size = min_size;
     }
 
     is_dead() {
@@ -76,6 +79,8 @@ class ParticleSystem {
     init_buffers() {
         this.pos_buffer = new THREE.BufferAttribute(new Float32Array(this.MAX_PARTICLES * 3), 3).setDynamic(true);
         this.geo.addAttribute("position", this.pos_buffer);
+        this.size_buffer = new THREE.BufferAttribute(new Float32Array(this.MAX_PARTICLES), 1).setDynamic(true);
+        this.geo.addAttribute("size", this.size_buffer);
     }
 
     render() {
@@ -129,9 +134,11 @@ class ParticleSystem {
             this.pos_buffer.array[j++] = particle.p.y;
             this.pos_buffer.array[j++] = particle.p.z;
 
+            this.size_buffer.array[i] = lerp(particle.max_size, particle.min_size, particle.age / particle.lifespan);
         }
 
         this.pos_buffer.needsUpdate = true;
+        this.size_buffer.needsUpdate = true;
     }
 
     get_object3D() {
@@ -161,7 +168,9 @@ class Emitter {
                 0,
                 new THREE.Vector3(getRandomArbitrary(-0.2, 0.2), getRandomArbitrary(0, 0.3), getRandomArbitrary(-0.2, 0.2)),
                 new THREE.Vector3(0, PARTICLE_GRAVITY, 0),
-                1));
+                1.5,
+                50,
+                20));
         }
     }
 
@@ -171,6 +180,9 @@ class Emitter {
 
 }
 
+function lerp(a, b, f) {
+    return a + f * (b - a);
+}
 
 function getRandomArbitrary(min, max) {
     return Math.random() * (max - min) + min;
