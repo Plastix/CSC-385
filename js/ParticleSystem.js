@@ -155,13 +155,14 @@ class Emitter {
     update(dt) {
         this.age += dt;
 
-        // TODO Actually spawn at spawn rate
-        this.system.spawn_particle(new Particle(
-            this.location.clone(),
-            0,
-            new THREE.Vector3(getRandomArbitrary(-0.2, 0.2), getRandomArbitrary(0, 0.3), getRandomArbitrary(-0.2, 0.2)),
-            new THREE.Vector3(0, PARTICLE_GRAVITY, 0),
-            1));
+        for (let i = 0; i < this.spawn_rate; i++) {
+            this.system.spawn_particle(new Particle(
+                this.location.clone(),
+                0,
+                new THREE.Vector3(getRandomArbitrary(-0.2, 0.2), getRandomArbitrary(0, 0.3), getRandomArbitrary(-0.2, 0.2)),
+                new THREE.Vector3(0, PARTICLE_GRAVITY, 0),
+                1));
+        }
     }
 
     is_dead() {

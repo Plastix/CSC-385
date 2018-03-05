@@ -68,7 +68,7 @@ function onMouseClick() {
             continue;
         }
         let pos = col.point;
-        system.add_emitter(new Emitter(system, pos, 0, 0.5));
+        system.add_emitter(new Emitter(system, pos, 100, 0));
         break;
 
     }
