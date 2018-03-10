@@ -25,12 +25,34 @@ const MAX_PARTICLES = 100000;
 const PARTICLE_GRAVITY = -0.5;
 const GRAVITY_VECTOR = new THREE.Vector3(0, PARTICLE_GRAVITY, 0);
 
-class Particle {
-    constructor(p, m, v, F, lifespan, color, size_bounds, alpha_bounds) {
+
+class Body {
+    constructor(p, m, v, F, time) {
         this.p = p;
         this.m = m;
         this.v = v;
         this.F = F;
+        this.time = time;
+    }
+
+
+    update_position(dt) {
+        this.time += dt;
+        let v = this.v.clone();
+        let p = this.p.clone();
+        let F = this.F.clone();
+        let a = F.multiplyScalar(1 / this.m);
+        this.p = p.add(v.multiplyScalar(this.time))
+            .add(a.multiplyScalar(1 / 2 * Math.pow(this.time, 2)));
+
+    }
+
+
+}
+
+class Particle {
+    constructor(body, lifespan, color, size_bounds, alpha_bounds) {
+        this.body = body;
         this.age = 0;
         this.lifespan = lifespan;
         this.color = color;
@@ -39,15 +61,12 @@ class Particle {
     }
 
     update(dt) {
-        // TODO Lot of copy-pasta here
-        let v = this.v.clone();
-        let p = this.p.clone();
-        let F = this.F.clone();
-        let a = F.multiplyScalar(1/this.m);
+        this.body.update_position(dt);
         this.age += dt;
-        this.p = p.add(v.multiplyScalar(this.age))
-            .add(a.multiplyScalar(1 / 2 * Math.pow(this.age, 2)));
+    }
 
+    get position() {
+        return this.body.p
     }
 
     is_dead() {
@@ -144,13 +163,13 @@ class ParticleSystem {
         let j = 0;
         for (let i = 0; i < this.particles.length; i++) {
             let particle = this.particles[i];
-            this.pos_buffer.array[j] = particle.p.x;
+            this.pos_buffer.array[j] = particle.position.x;
             this.color_buffer.array[j] = particle.color.x;
             j++;
-            this.pos_buffer.array[j] = particle.p.y;
+            this.pos_buffer.array[j] = particle.position.y;
             this.color_buffer.array[j] = particle.color.y;
             j++;
-            this.pos_buffer.array[j] = particle.p.z;
+            this.pos_buffer.array[j] = particle.position.z;
             this.color_buffer.array[j] = particle.color.z;
             j++;
 
@@ -172,14 +191,11 @@ class ParticleSystem {
 
 class Emitter {
 
-    constructor(system, m, p, v, F, spawn_rate, lifespan, velocity_generator, color_generator, age_generator) {
+    constructor(system, body, spawn_rate, lifespan, velocity_generator, color_generator, age_generator) {
         // Emitter params
         this.system = system;
-        this.p = p;
-        this.v = v;
-        this.F = F;
+        this.body = body;
 
-        this.m = m;
         this.spawn_rate = spawn_rate;
         this.lifespan = lifespan;
         this.age = 0;
@@ -188,28 +204,21 @@ class Emitter {
         this.age_generator = age_generator;
     }
 
+
     update(dt) {
         this.age += dt;
-
-        let v = this.v.clone();
-        let p = this.p.clone();
-        let F = this.F.clone();
-
-        let a = F.multiplyScalar(1/this.m);
-        this.p = p.add(v.multiplyScalar(this.age))
-            .add(a.multiplyScalar(1 / 2 * Math.pow(this.age, 2)));
-
+        this.body.update_position(dt);
 
         for (let i = 0; i < this.spawn_rate; i++) {
+            let m = 1;
+            let gravity = GRAVITY_VECTOR.clone().multiplyScalar(m);
             this.system.spawn_particle(new Particle(
-                this.p.clone(),
-                1, // hard coded for now
-                this.velocity_generator(),
-                this.F.clone(),
+                new Body(this.body.p, m, this.velocity_generator(), gravity, 0),
                 this.age_generator(),
                 this.color_generator(),
                 new THREE.Vector2(50, 20),
-                new THREE.Vector2(1, 0)));
+                new THREE.Vector2(1, 0)
+            ));
         }
     }
 
@@ -222,8 +231,8 @@ class Emitter {
 class Shell extends Emitter {
 
 
-    constructor(system, m, p, v, F, spawn_rate, lifespan, velocity_generator, color_generator, age_generator) {
-        super(system, m, p, v, F, spawn_rate, lifespan, velocity_generator, color_generator, age_generator);
+    constructor(system, body, spawn_rate, lifespan, velocity_generator, color_generator, age_generator) {
+        super(system, body, spawn_rate, lifespan, velocity_generator, color_generator, age_generator);
     }
 
     is_dead() {
@@ -246,8 +255,7 @@ class Shell extends Emitter {
             let g = GRAVITY_VECTOR.clone();
             let m = 1; // hard coded mass for now
             let gravity = g.multiplyScalar(m);
-
-            this.system.add_emitter(new Emitter(system, m, this.p, velocity, gravity, 200, 0, vel_func, rainbow, age_func))
+            this.system.add_emitter(new Emitter(system, new Body(this.body.p, m, velocity, gravity, 0) , 200, 0, vel_func, rainbow, age_func))
         }
 
         return dead

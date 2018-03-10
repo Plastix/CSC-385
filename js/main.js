@@ -98,7 +98,7 @@ function onMouseClick() {
             let m = 1;
             let gravity = GRAVITY_VECTOR.clone();
             gravity = gravity.multiplyScalar(m);
-            system.add_emitter(new Shell(system, 1, pos, velocity, gravity, 10, 0.5, velocity_gen, smoke, age_gen));
+            system.add_emitter(new Shell(system, new Body(pos, m, velocity, gravity, 0), 10, 0.5, velocity_gen, smoke, age_gen));
             break;
         }
 
