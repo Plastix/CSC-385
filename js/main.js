@@ -5,11 +5,16 @@ const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
+let texture_loader = new THREE.TextureLoader();
 let controls = new THREE.OrbitControls(camera, renderer.domElement);
 
 const plane = new THREE.Mesh(
-    new THREE.PlaneGeometry(10, 10, 1, 1),
-    new THREE.MeshBasicMaterial({color: 0xaaaaaa})
+    new THREE.PlaneGeometry(10, 10, 10, 10),
+    new THREE.MeshBasicMaterial({
+            color: 0xaaaaaa,
+            wireframe: true
+        }
+    )
 );
 plane.rotateX(-Math.PI / 2);
 scene.add(plane);
@@ -21,6 +26,25 @@ system_obj.position.y = 1;
 
 camera.position.z = 5;
 camera.position.y = 3;
+
+function setup_skybox() {
+    let imagePrefix = "textures/skybox1/";
+    let directions = ["px", "nx", "py", "ny", "pz", "nz"];
+    let imageSuffix = ".jpg";
+    let skyGeometry = new THREE.CubeGeometry(250, 250, 250);
+
+    let materialArray = [];
+    for (let i = 0; i < 6; i++)
+        materialArray.push(new THREE.MeshBasicMaterial({
+            map: texture_loader.load(imagePrefix + directions[i] + imageSuffix),
+            side: THREE.BackSide
+        }));
+    let skyBox = new THREE.Mesh(skyGeometry, materialArray);
+    scene.add(skyBox);
+}
+
+setup_skybox();
+
 
 const stats = new Stats();
 stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
@@ -64,12 +88,12 @@ function onMouseClick() {
 
     for (let i = 0; i < intersects.length; i++) {
         let col = intersects[i];
-        if (col.object === system_obj) {
-            continue;
+        if (col.object === plane) {
+
+            let pos = col.point;
+            system.add_emitter(new Emitter(system, pos, 100, 0));
+            break;
         }
-        let pos = col.point;
-        system.add_emitter(new Emitter(system, pos, 100, 0));
-        break;
 
     }
 
