@@ -28,10 +28,10 @@ camera.position.z = 5;
 camera.position.y = 3;
 
 function setup_skybox() {
-    let imagePrefix = "textures/skybox1/";
+    let imagePrefix = "textures/skybox4/";
     let directions = ["px", "nx", "py", "ny", "pz", "nz"];
     let imageSuffix = ".jpg";
-    let skyGeometry = new THREE.CubeGeometry(250, 250, 250);
+    let skyGeometry = new THREE.CubeGeometry(500, 500, 500);
 
     let materialArray = [];
     for (let i = 0; i < 6; i++)
