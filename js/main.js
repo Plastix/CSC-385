@@ -91,7 +91,11 @@ function onMouseClick() {
         if (col.object === plane) {
 
             let pos = col.point;
-            system.add_emitter(new Emitter(system, pos, 100, 0));
+            let smoke = () => new THREE.Vector3(getRandomArbitrary(0, 0.2), getRandomArbitrary(0, 0.2), getRandomArbitrary(0, 0.2));
+            let velocity_gen = () => new THREE.Vector3(getRandomArbitrary(-0.01, 0.01), 0, getRandomArbitrary(-0.01, 0.01));
+            let age_gen = () => getRandomArbitrary(0.5, 0.5);
+            let velocity = new THREE.Vector3(0, 0.2, 0);
+            system.add_emitter(new Shell(system, pos, velocity, GRAVITY_VECTOR, 10, 0.5, velocity_gen, smoke, age_gen));
             break;
         }
 

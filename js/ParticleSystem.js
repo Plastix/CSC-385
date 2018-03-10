@@ -21,11 +21,13 @@ let fragment_shader = `
     }
 `;
 
+const MAX_PARTICLES = 100000;
 const PARTICLE_GRAVITY = -0.5;
+const GRAVITY_VECTOR = new THREE.Vector3(0, PARTICLE_GRAVITY, 0);
 
 class Particle {
-    constructor(pos, m, v, a, lifespan, color, size_bounds, alpha_bounds) {
-        this.p = pos;
+    constructor(p, m, v, a, lifespan, color, size_bounds, alpha_bounds) {
+        this.p = p;
         this.m = m;
         this.v = v;
         this.a = a;
@@ -36,6 +38,17 @@ class Particle {
         this.alpha_bounds = alpha_bounds;
     }
 
+    update(dt) {
+        // TODO Lot of copy-pasta here
+        let v = this.v.clone();
+        let p = this.p.clone();
+        let a = this.a.clone();
+        this.age += dt;
+        this.p = p.add(v.multiplyScalar(this.age))
+            .add(a.multiplyScalar(1 / 2 * Math.pow(this.age, 2)));
+
+    }
+
     is_dead() {
         return this.age > this.lifespan;
     }
@@ -44,7 +57,6 @@ class Particle {
 class ParticleSystem {
 
     constructor() {
-        this.MAX_PARTICLES = 10000;
         this.clock = new THREE.Clock();
 
         let uniforms = {
@@ -69,7 +81,7 @@ class ParticleSystem {
     }
 
     spawn_particle(particle) {
-        if (this.particles.length < this.MAX_PARTICLES) {
+        if (this.particles.length < MAX_PARTICLES) {
             this.particles.push(particle);
         }
     }
@@ -79,13 +91,13 @@ class ParticleSystem {
     }
 
     init_buffers() {
-        this.pos_buffer = new THREE.BufferAttribute(new Float32Array(this.MAX_PARTICLES * 3), 3).setDynamic(true);
+        this.pos_buffer = new THREE.BufferAttribute(new Float32Array(MAX_PARTICLES * 3), 3).setDynamic(true);
         this.geo.addAttribute("position", this.pos_buffer);
-        this.color_buffer = new THREE.BufferAttribute(new Float32Array(this.MAX_PARTICLES * 3), 3).setDynamic(true);
+        this.color_buffer = new THREE.BufferAttribute(new Float32Array(MAX_PARTICLES * 3), 3).setDynamic(true);
         this.geo.addAttribute("color", this.color_buffer);
-        this.size_buffer = new THREE.BufferAttribute(new Float32Array(this.MAX_PARTICLES), 1).setDynamic(true);
+        this.size_buffer = new THREE.BufferAttribute(new Float32Array(MAX_PARTICLES), 1).setDynamic(true);
         this.geo.addAttribute("size", this.size_buffer);
-        this.alpha_buffer = new THREE.BufferAttribute(new Float32Array(this.MAX_PARTICLES), 1).setDynamic(true);
+        this.alpha_buffer = new THREE.BufferAttribute(new Float32Array(MAX_PARTICLES), 1).setDynamic(true);
         this.geo.addAttribute("alpha", this.alpha_buffer);
     }
 
@@ -105,12 +117,7 @@ class ParticleSystem {
         let particles = [];
         for (let i = 0; i < this.particles.length; i++) {
             let particle = this.particles[i];
-            let v = particle.v.clone();
-            let p = particle.p.clone();
-            let a = particle.a.clone();
-            particle.age += dt;
-            particle.p = p.add(v.multiplyScalar(particle.age))
-                .add(a.multiplyScalar(1 / 2 * Math.pow(particle.age, 2)));
+            particle.update(dt);
 
             if (!particle.is_dead()) {
                 particles.push(particle);
@@ -164,27 +171,39 @@ class ParticleSystem {
 
 class Emitter {
 
-    constructor(system, location, spawn_rate, lifespan) {
+    constructor(system, p, v, a, spawn_rate, lifespan, velocity_generator, color_generator, age_generator) {
         // Emitter params
         this.system = system;
-        this.location = location;
+        this.p = p;
+        this.v = v;
+        this.a = a;
         this.spawn_rate = spawn_rate;
         this.lifespan = lifespan;
         this.age = 0;
-
+        this.velocity_generator = velocity_generator;
+        this.color_generator = color_generator;
+        this.age_generator = age_generator;
     }
 
     update(dt) {
         this.age += dt;
 
+        let v = this.v.clone();
+        let p = this.p.clone();
+        let a = this.a.clone();
+
+        this.p = p.add(v.multiplyScalar(this.age))
+            .add(a.multiplyScalar(1 / 2 * Math.pow(this.age, 2)));
+
+
         for (let i = 0; i < this.spawn_rate; i++) {
             this.system.spawn_particle(new Particle(
-                this.location.clone(),
+                this.p.clone(),
                 0,
-                new THREE.Vector3(getRandomArbitrary(-0.2, 0.2), getRandomArbitrary(0, 0.3), getRandomArbitrary(-0.2, 0.2)),
-                new THREE.Vector3(0, PARTICLE_GRAVITY, 0),
-                1.5,
-                new THREE.Vector3(getRandomArbitrary(0, 1), getRandomArbitrary(0, 1), getRandomArbitrary(0, 1)),
+                this.velocity_generator(),
+                GRAVITY_VECTOR,
+                this.age_generator(),
+                this.color_generator(),
                 new THREE.Vector2(50, 20),
                 new THREE.Vector2(1, 0)));
         }
@@ -196,10 +215,33 @@ class Emitter {
 
 }
 
-function lerp(a, b, f) {
-    return a + f * (b - a);
-}
+class Shell extends Emitter {
 
-function getRandomArbitrary(min, max) {
-    return Math.random() * (max - min) + min;
+
+    constructor(system, p, v, a, spawn_rate, lifespan, velocity_generator, color_generator, age_generator) {
+        super(system, p, v, a, spawn_rate, lifespan, velocity_generator, color_generator, age_generator);
+    }
+
+    is_dead() {
+        let dead = super.is_dead();
+
+        if (dead) {
+            let rainbow = () => new THREE.Vector3(
+                getRandomArbitrary(0, 1),
+                getRandomArbitrary(0, 1),
+                getRandomArbitrary(0, 1),
+            );
+            let vel_func = () => new THREE.Vector3(
+                getRandomArbitrary(-0.2, 0.2),
+                getRandomArbitrary(0, 0.3),
+                getRandomArbitrary(-0.2, 0.2)
+            );
+
+            let age_func = () => getRandomArbitrary(1, 2.5);
+            let velocity = new THREE.Vector3(0, 0, 0);
+            this.system.add_emitter(new Emitter(system, this.p, velocity, GRAVITY_VECTOR, 200, 0, vel_func, rainbow, age_func))
+        }
+
+        return dead
+    }
 }
