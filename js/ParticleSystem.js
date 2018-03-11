@@ -27,12 +27,13 @@ let fragment_shader = `
 
 
 class Body {
-    constructor(p, m, v, F, time) {
+    constructor(p, m, v, F, time, r) {
         this.p = p;
         this.m = m;
         this.v = v;
         this.F = F;
         this.time = time;
+        this.r = r;
     }
 
 
@@ -45,6 +46,24 @@ class Body {
         this.p = p.add(v.multiplyScalar(this.time))
             .add(a.multiplyScalar(1 / 2 * Math.pow(this.time, 2)));
 
+    }
+
+    update_position_numeric(dt) {
+        let v0 = this.v.clone();
+        let p0 = this.p.clone();
+        let radius = this.r;
+        let area = Math.PI * Math.pow(radius,2);
+        let v_square = v0.clone().multiplyVectors(v0.clone(), v0.clone());
+        let friction = v_square.clone().multiplyScalar(-0.65*area/9.81*(-params.gravity)); // the default gravitation acceleration is -0.5
+        let g = gravity_vector();
+        let gravity = g.multiplyScalar(this.m);
+        let total = friction.clone().add(gravity);
+        let a = total.clone().multiplyScalar(1/ this.m);
+        let dv = a.clone();
+        let dp = this.v.clone();
+        this.v = v0.add(dv.multiplyScalar(dt));
+        this.p = p0.add(dp.multiplyScalar(dt));
+        this.time += dt;
     }
 
 
@@ -61,12 +80,17 @@ class Particle {
     }
 
     update(dt) {
-        this.body.update_position(dt);
+        //this.body.update_position(dt);
+        this.body.update_position_numeric(dt);
         this.age += dt;
     }
 
     get position() {
         return this.body.p
+    }
+
+    get size() {
+        return lerp(this.size_bounds.x, this.size_bounds.y, this.age / this.lifespan)
     }
 
     is_dead() {
@@ -175,7 +199,7 @@ class ParticleSystem {
             this.color_buffer.array[j] = particle.color.z;
             j++;
 
-            this.size_buffer.array[i] = lerp(particle.size_bounds.x, particle.size_bounds.y, particle.age / particle.lifespan);
+            this.size_buffer.array[i] = particle.size;
             this.alpha_buffer.array[i] = lerp(particle.alpha_bounds.x, particle.alpha_bounds.y, particle.age / particle.lifespan);
         }
 
@@ -222,9 +246,10 @@ class Emitter {
     spawn() {
         for (let i = 0; i < this.spawn_rate; i++) {
             let m = 1;
+            let r = 2;
             let gravity = gravity_vector().multiplyScalar(m);
             this.system.spawn_particle(new Particle(
-                new Body(this.body.p, m, this.velocity_generator(), gravity, 0),
+                new Body(this.body.p, m, this.velocity_generator(), gravity, 0, r),
                 this.age_generator(),
                 this.color_generator(),
                 new THREE.Vector2(300, 150),
@@ -269,7 +294,7 @@ class Shell extends Emitter {
             let m = 1; // hard coded mass for now
 
             let gravity = gravity_vector().multiplyScalar(m);
-            let body = new Body(this.body.p, m, velocity, gravity, 0);
+            let body = new Body(this.body.p, m, velocity, gravity, 0, 1);
             let emitter = new Emitter(system, body, params.explosion_num, 0, vel_func, rainbow, age_func);
             this.system.add_emitter(emitter)
         }
