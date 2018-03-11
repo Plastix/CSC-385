@@ -19,13 +19,13 @@ const plane = new THREE.Mesh(
 plane.rotateX(-Math.PI / 2);
 scene.add(plane);
 
-let system = new ParticleSystem();
+camera.position.z = 5;
+camera.position.y = 3;
+
+let system = new ParticleSystem(camera);
 let system_obj = system.get_object3D();
 scene.add(system_obj);
 system_obj.position.y = 1;
-
-camera.position.z = 5;
-camera.position.y = 3;
 
 function setup_skybox() {
     let imagePrefix = "textures/skybox4/";

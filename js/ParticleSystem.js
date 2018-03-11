@@ -1,4 +1,5 @@
 let vertex_shader = `
+    uniform vec3 cameraPos;
     attribute float size;
     attribute float alpha;
     varying vec4 vColor;
@@ -6,7 +7,10 @@ let vertex_shader = `
     void main() {
         vColor = vec4(color, alpha);
         gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-        gl_PointSize = size;
+        
+        vec4 mvPosition = modelViewMatrix * vec4(position, 1.0 );
+        float cameraDist = distance( mvPosition.xyz, cameraPos );
+        gl_PointSize = size / cameraDist;
     }
 `;
 
@@ -76,16 +80,18 @@ class Particle {
 
 class ParticleSystem {
 
-    constructor() {
+    constructor(camera) {
         this.clock = new THREE.Clock();
+        this.camera = camera;
 
-        let uniforms = {
-            texture: {value: new THREE.TextureLoader().load("textures/sprites/spark1.png")}
+        this.uniforms = {
+            texture: {value: new THREE.TextureLoader().load("textures/sprites/spark1.png")},
+            cameraPos: {value: camera.position}
         };
 
         this.geo = new THREE.BufferGeometry();
         this.mat = new THREE.ShaderMaterial({
-            uniforms: uniforms,
+            uniforms: this.uniforms,
             vertexShader: vertex_shader,
             fragmentShader: fragment_shader,
             blending: THREE.AdditiveBlending,
@@ -181,6 +187,10 @@ class ParticleSystem {
         this.size_buffer.needsUpdate = true;
         this.alpha_buffer.needsUpdate = true;
         this.color_buffer.needsUpdate = true;
+
+        // Update uniforms
+        this.uniforms.cameraPos.value = this.camera.position;
+        this.uniforms.cameraPos.needsUpdate = true;
     }
 
     get_object3D() {
@@ -216,7 +226,7 @@ class Emitter {
                 new Body(this.body.p, m, this.velocity_generator(), gravity, 0),
                 this.age_generator(),
                 this.color_generator(),
-                new THREE.Vector2(50, 20),
+                new THREE.Vector2(300, 150),
                 new THREE.Vector2(1, 0)
             ));
         }
@@ -255,7 +265,7 @@ class Shell extends Emitter {
             let g = GRAVITY_VECTOR.clone();
             let m = 1; // hard coded mass for now
             let gravity = g.multiplyScalar(m);
-            this.system.add_emitter(new Emitter(system, new Body(this.body.p, m, velocity, gravity, 0) , 200, 0, vel_func, rainbow, age_func))
+            this.system.add_emitter(new Emitter(system, new Body(this.body.p, m, velocity, gravity, 0), 200, 0, vel_func, rainbow, age_func))
         }
 
         return dead
