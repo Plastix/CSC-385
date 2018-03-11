@@ -265,11 +265,13 @@ class Shell extends Emitter {
                 getRandomArbitrary(0, 1),
                 getRandomArbitrary(0, 1),
             );
-            let vel_func = () => new THREE.Vector3(
-                getRandomArbitrary(-0.2, 0.2),
-                getRandomArbitrary(0, 0.3),
-                getRandomArbitrary(-0.2, 0.2)
-            );
+            let vel_func = () => {
+                let vel = new THREE.Vector3(0, 0.2, 0);
+                vel.applyAxisAngle(X_AXIS, getRandomArbitrary(-2 * Math.PI, 2 * Math.PI));
+                vel.applyAxisAngle(Z_AXIS, getRandomArbitrary(-2 * Math.PI, 2 * Math.PI));
+
+                return vel;
+            };
 
             let age_func = () => getRandomArbitrary(1, 2.5);
             let velocity = new THREE.Vector3(0, 0, 0);
