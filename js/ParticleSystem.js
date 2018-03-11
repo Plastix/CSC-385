@@ -26,8 +26,6 @@ let fragment_shader = `
 `;
 
 const MAX_PARTICLES = 100000;
-const PARTICLE_GRAVITY = -0.5;
-const GRAVITY_VECTOR = new THREE.Vector3(0, PARTICLE_GRAVITY, 0);
 
 
 class Body {
@@ -226,7 +224,7 @@ class Emitter {
     spawn() {
         for (let i = 0; i < this.spawn_rate; i++) {
             let m = 1;
-            let gravity = GRAVITY_VECTOR.clone().multiplyScalar(m);
+            let gravity = gravity_vector().multiplyScalar(m);
             this.system.spawn_particle(new Particle(
                 new Body(this.body.p, m, this.velocity_generator(), gravity, 0),
                 this.age_generator(),
@@ -275,9 +273,8 @@ class Shell extends Emitter {
 
             let age_func = () => getRandomArbitrary(1, 2.5);
             let velocity = new THREE.Vector3(0, 0, 0);
-            let g = GRAVITY_VECTOR.clone();
             let m = 1; // hard coded mass for now
-            let gravity = g.multiplyScalar(m);
+            let gravity = gravity_vector().multiplyScalar(m);
             this.system.add_emitter(new Emitter(system, new Body(this.body.p, m, velocity, gravity, 0), 200, 0, vel_func, rainbow, age_func))
         }
 
