@@ -246,7 +246,7 @@ class Emitter {
     spawn() {
         for (let i = 0; i < this.spawn_rate; i++) {
             let m = 1;
-            let r = 2;
+            let r = 0.5;
             let gravity = gravity_vector().multiplyScalar(m);
             this.system.spawn_particle(new Particle(
                 new Body(this.body.p, m, this.velocity_generator(), gravity, 0, r),

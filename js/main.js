@@ -42,7 +42,7 @@ function setup_gui() {
     shell.add(params, "shell_age").min(0).max(3).step(0.1);
 
     let firework = gui.addFolder("Firework");
-    firework.add(params, "explosion_vel").min(0).max(1).step(0.01);
+    firework.add(params, "explosion_vel").min(0).max(5).step(0.1);
     firework.add(params, "explosion_num").min(0).max(1000).step(1);
     firework.add(params, "explosion_age_min").min(0).max(10).step(0.1);
     firework.add(params, "explosion_age_max").min(0).max(10).step(0.1);
