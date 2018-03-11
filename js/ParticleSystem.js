@@ -66,6 +66,10 @@ class Body {
         this.time += dt;
     }
 
+    update_shell_numeric(dt) {
+        
+    }
+
 
 }
 
@@ -246,10 +250,10 @@ class Emitter {
     spawn() {
         for (let i = 0; i < this.spawn_rate; i++) {
             let m = 1;
-            let r = 0.5;
+            //let r = 0.5;
             let gravity = gravity_vector().multiplyScalar(m);
             this.system.spawn_particle(new Particle(
-                new Body(this.body.p, m, this.velocity_generator(), gravity, 0, r),
+                new Body(this.body.p, m, this.velocity_generator(), gravity, 0, params.particle_radius),
                 this.age_generator(),
                 this.color_generator(),
                 new THREE.Vector2(300, 150),
@@ -294,7 +298,7 @@ class Shell extends Emitter {
             let m = 1; // hard coded mass for now
 
             let gravity = gravity_vector().multiplyScalar(m);
-            let body = new Body(this.body.p, m, velocity, gravity, 0, 1);
+            let body = new Body(this.body.p, m, velocity, gravity, 0, params.particle_radius);
             let emitter = new Emitter(system, body, params.explosion_num, 0, vel_func, rainbow, age_func);
             this.system.add_emitter(emitter)
         }

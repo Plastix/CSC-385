@@ -10,6 +10,7 @@ function Params() {
     this.explosion_num = 200;
     this.explosion_age_min = 1;
     this.explosion_age_max = 2.5;
+    this.particle_radius = 0.5;
 
     this.shell_num = 10;
     this.shell_vel = 0.2;

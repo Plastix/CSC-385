@@ -46,6 +46,7 @@ function setup_gui() {
     firework.add(params, "explosion_num").min(0).max(1000).step(1);
     firework.add(params, "explosion_age_min").min(0).max(10).step(0.1);
     firework.add(params, "explosion_age_max").min(0).max(10).step(0.1);
+    firework.add(params, "particle_radius").min(0).max(2).step(0.05);
 }
 
 
