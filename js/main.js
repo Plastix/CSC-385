@@ -33,7 +33,19 @@ function setup_stats() {
 function setup_gui() {
     params = new Params();
     const gui = new dat.GUI();
-    gui.add(params, "gravity").min(-1).max(0).step(0.01);
+    let global = gui.addFolder("Scene");
+    global.add(params, "gravity").min(-1).max(0).step(0.01);
+
+    let shell = gui.addFolder("Shell");
+    shell.add(params, "shell_num").min(0).max(100).step(1);
+    shell.add(params, "shell_vel").min(0).max(1).step(0.01);
+    shell.add(params, "shell_age").min(0).max(3).step(0.1);
+
+    let firework = gui.addFolder("Firework");
+    firework.add(params, "explosion_vel").min(0).max(1).step(0.01);
+    firework.add(params, "explosion_num").min(0).max(1000).step(1);
+    firework.add(params, "explosion_age_min").min(0).max(10).step(0.1);
+    firework.add(params, "explosion_age_max").min(0).max(10).step(0.1);
 }
 
 
@@ -126,12 +138,13 @@ function create_firework_shell(position) {
         getRandomArbitrary(-0.01, 0.01),
         0,
         getRandomArbitrary(-0.01, 0.01));
-    let age_gen = () => getRandomArbitrary(0.5, 0.5);
-    let velocity = new THREE.Vector3(0, 0.2, 0);
+
+    let age_gen = () => getRandomArbitrary(0.1, 0.7);
+    let velocity = new THREE.Vector3(0, params.shell_vel, 0);
     let m = 1;
     let gravity = gravity_vector().multiplyScalar(m);
     let body = new Body(position, m, velocity, gravity, 0);
-    let shell = new Shell(system, body, 10, 0.85, velocity_gen, smoke, age_gen);
+    let shell = new Shell(system, body, params.shell_num, params.shell_age, velocity_gen, smoke, age_gen);
     system.add_emitter(shell);
 }
 

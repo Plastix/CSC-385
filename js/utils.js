@@ -1,11 +1,11 @@
-function lerp(a, b, f) {
-    return a + f * (b - a);
-}
+const lerp = (a, b, f) => a + f * (b - a);
 
-function getRandomArbitrary(min, max) {
-    return Math.random() * (max - min) + min;
-}
+const getRandomArbitrary = (min, max) => Math.random() * (max - min) + min;
 
-function gravity_vector() {
-    return new THREE.Vector3(0, params.gravity, 0);
-}
+const gravity_vector = () => new THREE.Vector3(0, params.gravity, 0);
+
+const rainbow = () => new THREE.Vector3(
+    getRandomArbitrary(0, 1),
+    getRandomArbitrary(0, 1),
+    getRandomArbitrary(0, 1),
+);

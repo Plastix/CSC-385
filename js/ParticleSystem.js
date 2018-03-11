@@ -25,8 +25,6 @@ let fragment_shader = `
     }
 `;
 
-const MAX_PARTICLES = 100000;
-
 
 class Body {
     constructor(p, m, v, F, time) {
@@ -258,24 +256,22 @@ class Shell extends Emitter {
         let dead = super.is_dead();
 
         if (dead) {
-            let rainbow = () => new THREE.Vector3(
-                getRandomArbitrary(0, 1),
-                getRandomArbitrary(0, 1),
-                getRandomArbitrary(0, 1),
-            );
             let vel_func = () => {
-                let vel = new THREE.Vector3(0, 0.2, 0);
+                let vel = new THREE.Vector3(0, params.explosion_vel, 0);
                 vel.applyAxisAngle(X_AXIS, getRandomArbitrary(-2 * Math.PI, 2 * Math.PI));
                 vel.applyAxisAngle(Z_AXIS, getRandomArbitrary(-2 * Math.PI, 2 * Math.PI));
 
                 return vel;
             };
 
-            let age_func = () => getRandomArbitrary(1, 2.5);
+            let age_func = () => getRandomArbitrary(params.explosion_age_min, params.explosion_age_max);
             let velocity = new THREE.Vector3(0, 0, 0);
             let m = 1; // hard coded mass for now
+
             let gravity = gravity_vector().multiplyScalar(m);
-            this.system.add_emitter(new Emitter(system, new Body(this.body.p, m, velocity, gravity, 0), 200, 0, vel_func, rainbow, age_func))
+            let body = new Body(this.body.p, m, velocity, gravity, 0);
+            let emitter = new Emitter(system, body, params.explosion_num, 0, vel_func, rainbow, age_func);
+            this.system.add_emitter(emitter)
         }
 
         return dead
