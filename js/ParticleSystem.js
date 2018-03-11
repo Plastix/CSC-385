@@ -207,6 +207,7 @@ class Emitter {
         this.body = body;
 
         this.spawn_rate = spawn_rate;
+        this.max_spawn_rate = spawn_rate;
         this.lifespan = lifespan;
         this.age = 0;
         this.velocity_generator = velocity_generator;
@@ -219,6 +220,10 @@ class Emitter {
         this.age += dt;
         this.body.update_position(dt);
 
+        this.spawn()
+    }
+
+    spawn() {
         for (let i = 0; i < this.spawn_rate; i++) {
             let m = 1;
             let gravity = GRAVITY_VECTOR.clone().multiplyScalar(m);
@@ -243,6 +248,12 @@ class Shell extends Emitter {
 
     constructor(system, body, spawn_rate, lifespan, velocity_generator, color_generator, age_generator) {
         super(system, body, spawn_rate, lifespan, velocity_generator, color_generator, age_generator);
+    }
+
+
+    update(dt) {
+        super.update(dt);
+        this.spawn_rate = Math.floor(lerp(this.max_spawn_rate, 0, this.age / this.lifespan));
     }
 
     is_dead() {
