@@ -52,13 +52,13 @@ class Body {
         let v0 = this.v.clone();
         let p0 = this.p.clone();
         let radius = this.r;
-        let area = Math.PI * Math.pow(radius,2);
+        let area = Math.PI * Math.pow(radius, 2);
         let v_square = v0.clone().multiplyVectors(v0.clone(), v0.clone());
-        let friction = v_square.clone().multiplyScalar(-0.65*area/9.81*(-params.gravity)); // the default gravitation acceleration is -0.5
+        let friction = v_square.clone().multiplyScalar(-0.65 * area / 9.81 * (-scene_params.gravity)); // the default gravitation acceleration is -0.5
         let g = gravity_vector();
         let gravity = g.multiplyScalar(this.m);
         let total = friction.clone().add(gravity);
-        let a = total.clone().multiplyScalar(1/ this.m);
+        let a = total.clone().multiplyScalar(1 / this.m);
         let dv = a.clone();
         let dp = this.v.clone();
         this.v = v0.add(dv.multiplyScalar(dt));
@@ -67,7 +67,7 @@ class Body {
     }
 
     update_shell_numeric(dt) {
-        
+
     }
 
 
@@ -253,7 +253,7 @@ class Emitter {
             //let r = 0.5;
             let gravity = gravity_vector().multiplyScalar(m);
             this.system.spawn_particle(new Particle(
-                new Body(this.body.p, m, this.velocity_generator(), gravity, 0, params.particle_radius),
+                new Body(this.body.p, m, this.velocity_generator(), gravity, 0, firework_params.particle_radius),
                 this.age_generator(),
                 this.color_generator(),
                 new THREE.Vector2(300, 150),
@@ -286,20 +286,20 @@ class Shell extends Emitter {
 
         if (dead) {
             let vel_func = () => {
-                let vel = new THREE.Vector3(0, params.explosion_vel, 0);
+                let vel = new THREE.Vector3(0, firework_params.velocity, 0);
                 vel.applyAxisAngle(X_AXIS, getRandomArbitrary(-2 * Math.PI, 2 * Math.PI));
                 vel.applyAxisAngle(Z_AXIS, getRandomArbitrary(-2 * Math.PI, 2 * Math.PI));
 
                 return vel;
             };
 
-            let age_func = () => getRandomArbitrary(params.explosion_age_min, params.explosion_age_max);
+            let age_func = () => getRandomArbitrary(firework_params.age_min, firework_params.age_max);
             let velocity = new THREE.Vector3(0, 0, 0);
             let m = 1; // hard coded mass for now
 
             let gravity = gravity_vector().multiplyScalar(m);
-            let body = new Body(this.body.p, m, velocity, gravity, 0, params.particle_radius);
-            let emitter = new Emitter(system, body, params.explosion_num, 0, vel_func, rainbow, age_func);
+            let body = new Body(this.body.p, m, velocity, gravity, 0, firework_params.particle_radius);
+            let emitter = new Emitter(system, body, firework_params.particle_num, 0, vel_func, rainbow, age_func);
             this.system.add_emitter(emitter)
         }
 

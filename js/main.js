@@ -1,6 +1,8 @@
 let scene, camera, renderer, texture_loader;
-let controls, stats, params;
+let controls, stats;
 let raycaster, mouse, system, plane;
+
+let shell_params, firework_params, scene_params;
 
 function init() {
     scene = new THREE.Scene();
@@ -31,22 +33,24 @@ function setup_stats() {
 }
 
 function setup_gui() {
-    params = new Params();
+    scene_params = new SceneParams();
+    shell_params = new ShellParams();
+    firework_params = new FireworkParams();
     const gui = new dat.GUI();
     let global = gui.addFolder("Scene");
-    global.add(params, "gravity").min(-1).max(0).step(0.01);
+    global.add(scene_params, "gravity").min(-1).max(0).step(0.01);
 
     let shell = gui.addFolder("Shell");
-    shell.add(params, "shell_num").min(0).max(100).step(1);
-    shell.add(params, "shell_vel").min(0).max(1).step(0.01);
-    shell.add(params, "shell_age").min(0).max(3).step(0.1);
+    shell.add(shell_params, "particle_num").min(0).max(100).step(1);
+    shell.add(shell_params, "velocity").min(0).max(1).step(0.01);
+    shell.add(shell_params, "lifespan").min(0).max(3).step(0.1);
 
     let firework = gui.addFolder("Firework");
-    firework.add(params, "explosion_vel").min(0).max(5).step(0.1);
-    firework.add(params, "explosion_num").min(0).max(1000).step(1);
-    firework.add(params, "explosion_age_min").min(0).max(10).step(0.1);
-    firework.add(params, "explosion_age_max").min(0).max(10).step(0.1);
-    firework.add(params, "particle_radius").min(0).max(2).step(0.05);
+    firework.add(firework_params, "velocity").min(0).max(5).step(0.1);
+    firework.add(firework_params, "particle_num").min(0).max(1000).step(1);
+    firework.add(firework_params, "age_min").min(0).max(10).step(0.1);
+    firework.add(firework_params, "age_max").min(0).max(10).step(0.1);
+    firework.add(firework_params, "particle_radius").min(0).max(2).step(0.05);
 }
 
 
@@ -141,11 +145,11 @@ function create_firework_shell(position) {
         getRandomArbitrary(-0.01, 0.01));
 
     let age_gen = () => getRandomArbitrary(0.1, 0.7);
-    let velocity = new THREE.Vector3(0, params.shell_vel, 0);
+    let velocity = new THREE.Vector3(0, shell_params.velocity, 0);
     let m = 1;
     let gravity = gravity_vector().multiplyScalar(m);
     let body = new Body(position, m, velocity, gravity, 0);
-    let shell = new Shell(system, body, params.shell_num, params.shell_age, velocity_gen, smoke, age_gen);
+    let shell = new Shell(system, body, shell_params.particle_num, shell_params.lifespan, velocity_gen, smoke, age_gen);
     system.add_emitter(shell);
 }
 
