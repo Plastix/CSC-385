@@ -8,8 +8,8 @@ const FIREWORK_SPHERE = 'sphere';
 const FIREWORK_CUBE = 'cube';
 const FIREWORK_FAN = 'fan';
 const SPHERE_NUMERIC = 'numeric_sphere';
-const GRAVITATION_LAW = 'double_stars';
-const FIREWORK_LIST = [FIREWORK_SPHERE, FIREWORK_CUBE, FIREWORK_FAN, SPHERE_NUMERIC]; //, GRAVITATION_LAW];
+const SMILE = 'smiley_face';
+const FIREWORK_LIST = [FIREWORK_SPHERE, FIREWORK_CUBE, FIREWORK_FAN, SPHERE_NUMERIC, SMILE];
 
 function FireworkParams() {
     this.velocity = 2;

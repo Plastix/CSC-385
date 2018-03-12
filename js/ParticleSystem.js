@@ -259,14 +259,25 @@ class Emitter {
     spawn() {
         for (let i = 0; i < this.spawn_rate; i++) {
             //let gravity = gravity_vector().multiplyScalar(m);
-
-            this.system.spawn_particle(new Particle(
-                new Body(this.body.p, firework_params.mass, this.velocity_generator(), this.force_generator(), 0, firework_params.particle_radius),
-                this.age_generator(),
-                this.color_generator(),
-                this.size_bounds,
-                this.alpha_bounds
-            ));
+            if (firework_params.firework_type == SMILE){
+                let max = this.spawn_rate;
+                let p = i/max;
+                this.system.spawn_particle(new Particle(
+                    new Body(this.body.p, firework_params.mass, this.velocity_generator(), this.force_generator(p, i, max), 0, firework_params.particle_radius),
+                    this.age_generator(),
+                    this.color_generator(),
+                    this.size_bounds,
+                    this.alpha_bounds
+                ));
+            }else {
+                this.system.spawn_particle(new Particle(
+                    new Body(this.body.p, firework_params.mass, this.velocity_generator(), this.force_generator(), 0, firework_params.particle_radius),
+                    this.age_generator(),
+                    this.color_generator(),
+                    this.size_bounds,
+                    this.alpha_bounds
+                ));
+            }
         }
     }
 
@@ -356,12 +367,57 @@ class Shell extends Emitter {
                 };
 
 
-            /*case GRAVITATION_LAW:
-                return () => {
-                    let force = 0;
-                    return force;
+            case SMILE:
+                return (p,i, max) => {
+                    if (p < 0.25) {
+                        let mid = max * 0.125;
+                        let range = max * 0.25 - mid;
+
+                        console.log(p);
+                        console.log(i);
+                        console.log(mid);
+                        console.log(max);
+                        let x = 0;
+                        if (i < mid) {
+                            x = -firework_params.init_force - 0.5 * firework_params.init_force * (Math.abs(i - mid) / range);
+                        } else {
+                            x = -firework_params.init_force + 0.5 * firework_params.init_force * (Math.abs(i - mid) / range);
+                        }
+
+                        let y = firework_params.init_force + 0.5 * firework_params.init_force * Math.abs(Math.abs(i-mid)/range-1);
+                        let force = new THREE.Vector3(x, y, firework_params.init_force);
+
+                        return force;
+                    } else if (p < 0.5) {
+                        let mid = max * 0.375;
+                        let range = max * 0.5 - mid;
+                        let x = 0;
+                        if (i < mid) {
+                            x = firework_params.init_force - 0.5 * firework_params.init_force * (Math.abs(i-mid)/range);
+                        } else {
+                            x = firework_params.init_force + 0.5 * firework_params.init_force * (Math.abs(i-mid)/range);
+                        }
+
+                        let y = firework_params.init_force + 0.5 * firework_params.init_force * Math.abs(Math.abs(i-mid)/range-1);
+                        let force = new THREE.Vector3(x, y, firework_params.init_force);
+
+                        return force;
+                    } else {
+                        let mid = max * 0.75;
+                        let range = max - mid;
+                        let x = 0;
+                        if (i < mid) {
+                            x = -firework_params.init_force * (Math.abs(i-mid)/range);
+                        } else {
+                            x = firework_params.init_force * (Math.abs(i-mid)/range);
+                        }
+
+                        let y = firework_params.init_force * (Math.abs(i-mid)/range);
+                        let force = new THREE.Vector3(x, y, firework_params.init_force);
+                        return force;
+                    }
                 };
-            */
+
             default:
                 return zero_vector;
 
