@@ -53,11 +53,13 @@ class Body {
         let p0 = this.p.clone();
         let radius = this.r;
         let area = Math.PI * Math.pow(radius, 2);
-        let v_square = v0.clone().multiplyVectors(v0.clone(), v0.clone());
-        let friction = v_square.clone().multiplyScalar(-0.65 * area / 9.81 * (-scene_params.gravity)); // the default gravitation acceleration is -0.5
+        let v_square = v0.clone().length();
+        let v_unit = v0.clone().normalize();
+        let friction = v_unit.clone().multiplyScalar(-0.65 * area / 9.81 * (-scene_params.gravity) * v_square); // the default gravitation acceleration is -0.5
         let g = gravity_vector();
         let gravity = g.multiplyScalar(this.m);
-        let total = friction.clone().add(gravity);
+        let initial_force = this.F.clone();
+        let total = friction.clone().add(gravity).add(initial_force);
         let a = total.clone().multiplyScalar(1 / this.m);
         let dv = a.clone();
         let dp = this.v.clone();
@@ -66,12 +68,11 @@ class Body {
         this.time += dt;
     }
 
-    update_shell_numeric(dt) {
-
-    }
-
 
 }
+
+
+
 
 class Particle {
     constructor(body, lifespan, color, size_bounds, alpha_bounds) {
@@ -229,7 +230,7 @@ class ParticleSystem {
 
 class Emitter {
 
-    constructor(system, body, spawn_rate, lifespan, velocity_generator, color_generator, age_generator, size_bounds, alpha_bounds) {
+    constructor(system, body, spawn_rate, lifespan, velocity_generator, force_generator, color_generator, age_generator, size_bounds, alpha_bounds) {
         // Emitter params
         this.system = system;
         this.body = body;
@@ -239,6 +240,8 @@ class Emitter {
         this.lifespan = lifespan;
         this.age = 0;
         this.velocity_generator = velocity_generator;
+        this.force_generator = force_generator;
+
         this.color_generator = color_generator;
         this.age_generator = age_generator;
         this.size_bounds = size_bounds;
@@ -255,11 +258,10 @@ class Emitter {
 
     spawn() {
         for (let i = 0; i < this.spawn_rate; i++) {
-            let m = 1;
-            //let r = 0.5;
-            let gravity = gravity_vector().multiplyScalar(m);
+            //let gravity = gravity_vector().multiplyScalar(m);
+
             this.system.spawn_particle(new Particle(
-                new Body(this.body.p, m, this.velocity_generator(), gravity, 0, firework_params.particle_radius),
+                new Body(this.body.p, firework_params.mass, this.velocity_generator(), this.force_generator(), 0, firework_params.particle_radius),
                 this.age_generator(),
                 this.color_generator(),
                 this.size_bounds,
@@ -277,9 +279,9 @@ class Emitter {
 class Shell extends Emitter {
 
 
-    constructor(system, body, spawn_rate, lifespan, velocity_generator, color_generator, age_generator,
+    constructor(system, body, spawn_rate, lifespan, velocity_generator, force_generator, color_generator, age_generator,
                 size_bounds, alpha_bounds) {
-        super(system, body, spawn_rate, lifespan, velocity_generator, color_generator, age_generator,
+        super(system, body, spawn_rate, lifespan, velocity_generator, force_generator, color_generator, age_generator,
             size_bounds, alpha_bounds);
     }
 
@@ -295,13 +297,11 @@ class Shell extends Emitter {
             let vel_func = this.get_velocity_function();
             let age_func = () => getRandomArbitrary(firework_params.age_min, firework_params.age_max);
             let velocity = new THREE.Vector3(0, 0, 0);
-            let m = 1; // hard coded mass for now
-
-            let gravity = gravity_vector().multiplyScalar(m);
-            let body = new Body(this.body.p, m, velocity, gravity, 0, firework_params.particle_radius);
+            let force_func = this.get_force_function();
+            let body = new Body(this.body.p, firework_params.mass, velocity, zero_vector(), 0, firework_params.particle_radius);
             let size_bounds = new THREE.Vector2(firework_params.size_max, firework_params.size_min);
             let alpha_bounds = new THREE.Vector2(firework_params.alpha_max, firework_params.alpha_min);
-            let emitter = new Emitter(system, body, firework_params.particle_num, 0, vel_func, rainbow, age_func,
+            let emitter = new Emitter(system, body, firework_params.particle_num, 0, vel_func, force_func, rainbow, age_func,
                 size_bounds, alpha_bounds);
             this.system.add_emitter(emitter)
         }
@@ -337,6 +337,33 @@ class Shell extends Emitter {
 
                     return vel;
                 };
+            default:
+                return zero_vector;
+
+
+        }
+    }
+
+    get_force_function() {
+        switch (firework_params.firework_type) {
+            case SPHERE_NUMERIC:
+                return () => {
+                    let force = new THREE.Vector3(0, firework_params.init_force, 0);
+                    force.applyAxisAngle(X_AXIS, getRandomArbitrary(-2 * Math.PI, 2 * Math.PI));
+                    force.applyAxisAngle(Z_AXIS, getRandomArbitrary(-2 * Math.PI, 2 * Math.PI));
+
+                    return force;
+                };
+
+
+            /*case GRAVITATION_LAW:
+                return () => {
+                    let force = 0;
+                    return force;
+                };
+            */
+            default:
+                return zero_vector;
 
         }
     }

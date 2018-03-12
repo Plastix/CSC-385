@@ -43,6 +43,7 @@ function setup_gui() {
     let shell = gui.addFolder("Shell");
     shell.add(shell_params, "particle_num").min(0).max(100).step(1);
     shell.add(shell_params, "velocity").min(0).max(1).step(0.01);
+
     shell.add(shell_params, "lifespan").min(0).max(3).step(0.1);
     shell.add(shell_params, "age_min").min(0).max(3).step(0.01);
     shell.add(shell_params, "age_max").min(0).max(3).step(0.01);
@@ -55,7 +56,9 @@ function setup_gui() {
     let firework = gui.addFolder("Firework");
     firework.add(firework_params, "firework_type", FIREWORK_LIST);
     firework.add(firework_params, "velocity").min(0).max(5).step(0.1);
-    firework.add(firework_params, "particle_num").min(0).max(1500).step(1);
+    firework.add(firework_params, "init_force").min(0).max(5000).step(1);
+    firework.add(firework_params,"mass").min(1).max(5000).step(1);
+    firework.add(firework_params, "particle_num").min(0).max(1500).step(2);
     firework.add(firework_params, "age_min").min(0).max(10).step(0.1);
     firework.add(firework_params, "age_max").min(0).max(10).step(0.1);
     firework.add(firework_params, "particle_radius").min(0).max(2).step(0.05);
@@ -165,8 +168,8 @@ function create_firework_shell(position) {
 
     let size_bounds = new THREE.Vector2(shell_params.size_max, shell_params.size_min);
     let alpha_bounds = new THREE.Vector2(shell_params.alpha_max, shell_params.alpha_min);
-    let shell = new Shell(system, body, shell_params.particle_num, shell_params.lifespan, velocity_gen, smoke,
-        age_gen, size_bounds, alpha_bounds);
+    let shell = new Shell(system, body, shell_params.particle_num, shell_params.lifespan, velocity_gen, zero_vector,
+        smoke, age_gen, size_bounds, alpha_bounds);
     system.add_emitter(shell);
 }
 

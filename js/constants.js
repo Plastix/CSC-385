@@ -7,10 +7,14 @@ const MAX_PARTICLES = 100000;
 const FIREWORK_SPHERE = 'sphere';
 const FIREWORK_CUBE = 'cube';
 const FIREWORK_FAN = 'fan';
-const FIREWORK_LIST = [FIREWORK_SPHERE, FIREWORK_CUBE, FIREWORK_FAN];
+const SPHERE_NUMERIC = 'numeric_sphere';
+const GRAVITATION_LAW = 'double_stars';
+const FIREWORK_LIST = [FIREWORK_SPHERE, FIREWORK_CUBE, FIREWORK_FAN, SPHERE_NUMERIC]; //, GRAVITATION_LAW];
 
 function FireworkParams() {
     this.velocity = 2;
+    this.init_force = 500;
+    this.mass = 250;
     this.particle_num = 200;
     this.age_min = 1;
     this.age_max = 2.5;
@@ -25,6 +29,7 @@ function FireworkParams() {
 function ShellParams() {
     this.particle_num = 10;
     this.velocity = 0.2;
+
     this.lifespan = 0.85;
     this.age_min = 0.1;
     this.age_max = 0.7;
