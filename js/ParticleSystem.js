@@ -97,6 +97,10 @@ class Particle {
         return lerp(this.size_bounds.x, this.size_bounds.y, this.age / this.lifespan)
     }
 
+    get alpha() {
+        return lerp(this.alpha_bounds.x, this.alpha_bounds.y, this.age / this.lifespan)
+    }
+
     is_dead() {
         return this.age > this.lifespan;
     }
@@ -204,7 +208,7 @@ class ParticleSystem {
             j++;
 
             this.size_buffer.array[i] = particle.size;
-            this.alpha_buffer.array[i] = lerp(particle.alpha_bounds.x, particle.alpha_bounds.y, particle.age / particle.lifespan);
+            this.alpha_buffer.array[i] = particle.alpha;
         }
 
         this.pos_buffer.needsUpdate = true;
@@ -225,7 +229,7 @@ class ParticleSystem {
 
 class Emitter {
 
-    constructor(system, body, spawn_rate, lifespan, velocity_generator, color_generator, age_generator) {
+    constructor(system, body, spawn_rate, lifespan, velocity_generator, color_generator, age_generator, size_bounds, alpha_bounds) {
         // Emitter params
         this.system = system;
         this.body = body;
@@ -237,6 +241,8 @@ class Emitter {
         this.velocity_generator = velocity_generator;
         this.color_generator = color_generator;
         this.age_generator = age_generator;
+        this.size_bounds = size_bounds;
+        this.alpha_bounds = alpha_bounds;
     }
 
 
@@ -256,8 +262,8 @@ class Emitter {
                 new Body(this.body.p, m, this.velocity_generator(), gravity, 0, firework_params.particle_radius),
                 this.age_generator(),
                 this.color_generator(),
-                new THREE.Vector2(300, 150),
-                new THREE.Vector2(1, 0)
+                this.size_bounds,
+                this.alpha_bounds
             ));
         }
     }
@@ -271,10 +277,11 @@ class Emitter {
 class Shell extends Emitter {
 
 
-    constructor(system, body, spawn_rate, lifespan, velocity_generator, color_generator, age_generator) {
-        super(system, body, spawn_rate, lifespan, velocity_generator, color_generator, age_generator);
+    constructor(system, body, spawn_rate, lifespan, velocity_generator, color_generator, age_generator,
+                size_bounds, alpha_bounds) {
+        super(system, body, spawn_rate, lifespan, velocity_generator, color_generator, age_generator,
+            size_bounds, alpha_bounds);
     }
-
 
     update(dt) {
         super.update(dt);
@@ -299,7 +306,10 @@ class Shell extends Emitter {
 
             let gravity = gravity_vector().multiplyScalar(m);
             let body = new Body(this.body.p, m, velocity, gravity, 0, firework_params.particle_radius);
-            let emitter = new Emitter(system, body, firework_params.particle_num, 0, vel_func, rainbow, age_func);
+            let size_bounds = new THREE.Vector2(firework_params.size_max, firework_params.size_min);
+            let alpha_bounds = new THREE.Vector2(firework_params.alpha_max, firework_params.alpha_min);
+            let emitter = new Emitter(system, body, firework_params.particle_num, 0, vel_func, rainbow, age_func,
+                size_bounds, alpha_bounds);
             this.system.add_emitter(emitter)
         }
 

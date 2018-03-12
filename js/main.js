@@ -44,13 +44,24 @@ function setup_gui() {
     shell.add(shell_params, "particle_num").min(0).max(100).step(1);
     shell.add(shell_params, "velocity").min(0).max(1).step(0.01);
     shell.add(shell_params, "lifespan").min(0).max(3).step(0.1);
+    shell.add(shell_params, "age_min").min(0).max(3).step(0.01);
+    shell.add(shell_params, "age_max").min(0).max(3).step(0.01);
+    shell.add(shell_params, "size_min").min(0).max(1000).step(1);
+    shell.add(shell_params, "size_max").min(0).max(1000).step(1);
+    shell.add(shell_params, "alpha_min").min(0).max(1).step(0.01);
+    shell.add(shell_params, "alpha_max").min(0).max(1).step(0.01);
+    shell.add(shell_params, "smoke_velocity").min(0).max(0.5).step(0.01);
 
     let firework = gui.addFolder("Firework");
     firework.add(firework_params, "velocity").min(0).max(5).step(0.1);
-    firework.add(firework_params, "particle_num").min(0).max(1000).step(1);
+    firework.add(firework_params, "particle_num").min(0).max(1500).step(1);
     firework.add(firework_params, "age_min").min(0).max(10).step(0.1);
     firework.add(firework_params, "age_max").min(0).max(10).step(0.1);
     firework.add(firework_params, "particle_radius").min(0).max(2).step(0.05);
+    firework.add(firework_params, "size_min").min(0).max(1000).step(1);
+    firework.add(firework_params, "size_max").min(0).max(1000).step(1);
+    firework.add(firework_params, "alpha_min").min(0).max(1).step(0.01);
+    firework.add(firework_params, "alpha_max").min(0).max(1).step(0.01);
 }
 
 
@@ -127,6 +138,7 @@ function onMouseClick() {
     for (let i = 0; i < intersects.length; i++) {
         let col = intersects[i];
         if (col.object === plane) {
+            col.point.y -= 1;
             create_firework_shell(col.point);
             break;
         }
@@ -140,16 +152,20 @@ function create_firework_shell(position) {
         getRandomArbitrary(0, 0.2));
 
     let velocity_gen = () => new THREE.Vector3(
-        getRandomArbitrary(-0.01, 0.01),
+        getRandomArbitrary(-shell_params.smoke_velocity, shell_params.smoke_velocity),
         0,
-        getRandomArbitrary(-0.01, 0.01));
+        getRandomArbitrary(-shell_params.smoke_velocity, shell_params.smoke_velocity));
 
-    let age_gen = () => getRandomArbitrary(0.1, 0.7);
+    let age_gen = () => getRandomArbitrary(shell_params.age_min, shell_params.age_max);
     let velocity = new THREE.Vector3(0, shell_params.velocity, 0);
     let m = 1;
     let gravity = gravity_vector().multiplyScalar(m);
     let body = new Body(position, m, velocity, gravity, 0);
-    let shell = new Shell(system, body, shell_params.particle_num, shell_params.lifespan, velocity_gen, smoke, age_gen);
+
+    let size_bounds = new THREE.Vector2(shell_params.size_max, shell_params.size_min);
+    let alpha_bounds = new THREE.Vector2(shell_params.alpha_max, shell_params.alpha_min);
+    let shell = new Shell(system, body, shell_params.particle_num, shell_params.lifespan, velocity_gen, smoke,
+        age_gen, size_bounds, alpha_bounds);
     system.add_emitter(shell);
 }
 
