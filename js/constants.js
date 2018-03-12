@@ -4,6 +4,11 @@ const Z_AXIS = new THREE.Vector3(0, 0, 1);
 
 const MAX_PARTICLES = 100000;
 
+const FIREWORK_SPHERE = 'sphere';
+const FIREWORK_CUBE = 'cube';
+const FIREWORK_FAN = 'fan';
+const FIREWORK_LIST = [FIREWORK_SPHERE, FIREWORK_CUBE, FIREWORK_FAN];
+
 function FireworkParams() {
     this.velocity = 2;
     this.particle_num = 200;
@@ -14,6 +19,7 @@ function FireworkParams() {
     this.size_min = 150;
     this.alpha_max = 1;
     this.alpha_min = 0;
+    this.firework_type = FIREWORK_SPHERE;
 }
 
 function ShellParams() {

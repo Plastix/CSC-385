@@ -292,14 +292,7 @@ class Shell extends Emitter {
         let dead = super.is_dead();
 
         if (dead) {
-            let vel_func = () => {
-                let vel = new THREE.Vector3(0, firework_params.velocity, 0);
-                vel.applyAxisAngle(X_AXIS, getRandomArbitrary(-2 * Math.PI, 2 * Math.PI));
-                vel.applyAxisAngle(Z_AXIS, getRandomArbitrary(-2 * Math.PI, 2 * Math.PI));
-
-                return vel;
-            };
-
+            let vel_func = this.get_velocity_function();
             let age_func = () => getRandomArbitrary(firework_params.age_min, firework_params.age_max);
             let velocity = new THREE.Vector3(0, 0, 0);
             let m = 1; // hard coded mass for now
@@ -314,5 +307,37 @@ class Shell extends Emitter {
         }
 
         return dead
+    }
+
+    get_velocity_function() {
+        switch (firework_params.firework_type) {
+            case FIREWORK_SPHERE:
+                return () => {
+                    let vel = new THREE.Vector3(0, firework_params.velocity, 0);
+                    vel.applyAxisAngle(X_AXIS, getRandomArbitrary(-2 * Math.PI, 2 * Math.PI));
+                    vel.applyAxisAngle(Z_AXIS, getRandomArbitrary(-2 * Math.PI, 2 * Math.PI));
+
+                    return vel;
+                };
+            case FIREWORK_CUBE:
+                return () => new THREE.Vector3(
+                    getRandomArbitrary(-firework_params.velocity, firework_params.velocity),
+                    getRandomArbitrary(-firework_params.velocity, firework_params.velocity),
+                    getRandomArbitrary(-firework_params.velocity, firework_params.velocity));
+
+            case FIREWORK_FAN:
+                let vel_base = new THREE.Vector3(0, firework_params.velocity, 0);
+                vel_base.applyAxisAngle(X_AXIS, getRandomArbitrary(Math.PI / -4, Math.PI / 4));
+                vel_base.applyAxisAngle(Z_AXIS, getRandomArbitrary(Math.PI / -4, Math.PI / 4));
+
+                return () => {
+                    let vel = vel_base.clone().multiplyScalar(getRandomArbitrary(0.2, 1));
+                    vel.applyAxisAngle(X_AXIS, getRandomArbitrary(Math.PI / -16, Math.PI / 16));
+                    vel.applyAxisAngle(Z_AXIS, getRandomArbitrary(Math.PI / -16, Math.PI / 16));
+
+                    return vel;
+                };
+
+        }
     }
 }

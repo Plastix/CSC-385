@@ -53,6 +53,7 @@ function setup_gui() {
     shell.add(shell_params, "smoke_velocity").min(0).max(0.5).step(0.01);
 
     let firework = gui.addFolder("Firework");
+    firework.add(firework_params, "firework_type", FIREWORK_LIST);
     firework.add(firework_params, "velocity").min(0).max(5).step(0.1);
     firework.add(firework_params, "particle_num").min(0).max(1500).step(1);
     firework.add(firework_params, "age_min").min(0).max(10).step(0.1);
