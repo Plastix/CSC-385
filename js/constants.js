@@ -15,8 +15,8 @@ function FireworkParams() {
     this.age_min = 1;
     this.age_max = 2.5;
     this.particle_radius = 0.5;
-    this.size_max = 300;
-    this.size_min = 150;
+    this.size_max = 400;
+    this.size_min = 200;
     this.alpha_max = 1;
     this.alpha_min = 0;
     this.firework_type = FIREWORK_SPHERE;
@@ -28,8 +28,8 @@ function ShellParams() {
     this.lifespan = 0.85;
     this.age_min = 0.1;
     this.age_max = 0.7;
-    this.size_max = 200;
-    this.size_min = 100;
+    this.size_max = 300;
+    this.size_min = 150;
     this.alpha_max = 1;
     this.alpha_min = 0;
     this.smoke_velocity = 0.15;
