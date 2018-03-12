@@ -9,7 +9,7 @@ let vertex_shader = `
         gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
         
         vec4 mvPosition = modelViewMatrix * vec4(position, 1.0 );
-        float cameraDist = distance( mvPosition.xyz, cameraPos );
+        float cameraDist = distance( mvPosition.xyz, cameraPos ) + 1.0;
         gl_PointSize = size / cameraDist;
     }
 `;
