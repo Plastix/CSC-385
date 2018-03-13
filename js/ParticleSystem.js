@@ -34,15 +34,25 @@ class Body {
         this.F = F;
         this.time = time;
         this.r = r;
+        this.physics = scene_params.physics;
     }
 
+    update(dt) {
+        switch (this.physics) {
+            case PHYSICS_ANALYTIC:
+                this.update_position(dt);
+                break;
+            case PHYSICS_NUMERIC:
+                this.update_position_numeric(dt);
+                break;
+        }
+    }
 
     update_position(dt) {
         this.time += dt;
         let v = this.v.clone();
         let p = this.p.clone();
-        let F = this.F.clone();
-        let a = F.multiplyScalar(1 / this.m);
+        let a = gravity_vector();
         this.p = p.add(v.multiplyScalar(this.time))
             .add(a.multiplyScalar(1 / 2 * Math.pow(this.time, 2)));
 
@@ -83,8 +93,7 @@ class Particle {
     }
 
     update(dt) {
-        //this.body.update_position(dt);
-        this.body.update_position_numeric(dt);
+        this.body.update(dt);
         this.age += dt;
     }
 

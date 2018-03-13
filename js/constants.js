@@ -11,6 +11,10 @@ const SPHERE_NUMERIC = 'numeric_sphere';
 const SMILE = 'smiley_face';
 const FIREWORK_LIST = [FIREWORK_SPHERE, FIREWORK_CUBE, FIREWORK_FAN, SPHERE_NUMERIC, SMILE];
 
+const PHYSICS_ANALYTIC = 'analytic';
+const PHYSICS_NUMERIC = 'numeric';
+const PHYSICS_LIST = [PHYSICS_ANALYTIC, PHYSICS_NUMERIC];
+
 function FireworkParams() {
     this.velocity = 2;
     this.init_force = 500;
@@ -42,4 +46,5 @@ function ShellParams() {
 
 function SceneParams() {
     this.gravity = -0.5;
+    this.physics = PHYSICS_NUMERIC;
 }

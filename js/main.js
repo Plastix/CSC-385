@@ -38,6 +38,7 @@ function setup_gui() {
     firework_params = new FireworkParams();
     const gui = new dat.GUI();
     let global = gui.addFolder("Scene");
+    global.add(scene_params, "physics", PHYSICS_LIST);
     global.add(scene_params, "gravity").min(-1).max(0).step(0.01);
 
     let shell = gui.addFolder("Shell");
@@ -57,7 +58,7 @@ function setup_gui() {
     firework.add(firework_params, "firework_type", FIREWORK_LIST);
     firework.add(firework_params, "velocity").min(0).max(5).step(0.1);
     firework.add(firework_params, "init_force").min(0).max(5000).step(1);
-    firework.add(firework_params,"mass").min(1).max(5000).step(1);
+    firework.add(firework_params, "mass").min(1).max(5000).step(1);
     firework.add(firework_params, "particle_num").min(0).max(1500).step(2);
     firework.add(firework_params, "age_min").min(0).max(10).step(0.1);
     firework.add(firework_params, "age_max").min(0).max(10).step(0.1);
