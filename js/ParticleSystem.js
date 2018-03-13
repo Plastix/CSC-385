@@ -384,7 +384,7 @@ class Shell extends Emitter {
                             x = -firework_params.init_force + 0.5 * firework_params.init_force * (Math.abs(i - mid) / range);
                         }
 
-                        let y = firework_params.init_force + 0.5 * firework_params.init_force * Math.abs(Math.abs(i-mid)/range-1);
+                        let y = firework_params.init_force + 0.5 * firework_params.init_force * Math.sin(Math.abs(Math.abs(i-mid)/range-1) * Math.PI/2);
                         let force = new THREE.Vector3(x, y, firework_params.init_force);
 
                         return force;
@@ -398,7 +398,7 @@ class Shell extends Emitter {
                             x = firework_params.init_force + 0.5 * firework_params.init_force * (Math.abs(i-mid)/range);
                         }
 
-                        let y = firework_params.init_force + 0.5 * firework_params.init_force * Math.abs(Math.abs(i-mid)/range-1);
+                        let y = firework_params.init_force + 0.5 * firework_params.init_force * Math.sin(Math.abs(Math.abs(i-mid)/range-1) * Math.PI/2);
                         let force = new THREE.Vector3(x, y, firework_params.init_force);
 
                         return force;
@@ -412,7 +412,7 @@ class Shell extends Emitter {
                             x = firework_params.init_force * (Math.abs(i-mid)/range);
                         }
 
-                        let y = firework_params.init_force * (Math.abs(i-mid)/range);
+                        let y = firework_params.init_force * Math.pow(Math.abs(i-mid)/range, 2);
                         let force = new THREE.Vector3(x, y, firework_params.init_force);
                         return force;
                     }
