@@ -1,0 +1,130 @@
+<!doctype html>
+<html>
+
+    <script id="vertex-shader" type="x-shader/x-vertex">
+        attribute vec4 vPosition;
+        attribute vec4 vColor;
+        uniform mat4 mMV;
+        varying vec4 fColor;
+
+        void main()
+        {
+            fColor = vColor;
+            gl_Position = mMV * vPosition;
+        }
+    </script>
+
+    <script id="fragment-shader" type="x-shader/x-fragment">
+        precision mediump float;
+        varying vec4 fColor;
+
+        void main()
+        {
+            gl_FragColor = fColor;
+        }
+    </script>
+
+
+    <script type="text/javascript" src="js/webgl-utils.js"></script>
+    <script type="text/javascript" src="js/initShaders.js"></script>
+    <script type="text/javascript" src="js/MV.js"></script>
+    <script type="text/javascript" src="js/mesh_main.js"></script>
+    <script type="text/javascript" src="js/mesh.js"></script>
+
+    <body>
+
+    <canvas id="gl-canvas" width="512" height="512">
+        Sorry; your browser doesn't support HTML5 canvas.
+    </canvas>
+
+    <br>
+    Camera Controls
+
+
+    <div>
+        x -5<input id="x-slider" type="range"
+                    min="-5" max="5" step=".1" value="0"/> 5
+        <script>
+            x = 0;
+            document.getElementById("x-slider").onchange =
+                function () {x = event.srcElement.value;};
+        </script>
+    </div>
+
+    <div>
+        y -5<input id="y-slider" type="range"
+                    min="-5" max="5" step=".1" value="0"/> 5
+        <script>
+            y = 0;
+            document.getElementById("y-slider").onchange =
+                function () {y = event.srcElement.value;};
+        </script>
+    </div>
+
+    <div>
+        z -5<input id="z-slider" type="range"
+                          min="-5" max="5" step=".1" value="-2"/> 5
+        <script>
+            z = -2;
+            document.getElementById("z-slider").onchange =
+                function () {z = event.srcElement.value;};
+        </script>
+    </div>
+
+    Rotation Controls
+
+    <div>
+        dtheta_x -2<input id="dtheta_x" type="range"
+                          min="-2" max="2" step="1" value="0"/> 2
+        <script>
+            dtheta_x = 0;
+            document.getElementById("dtheta_x").onchange =
+                function () {dtheta_x = event.srcElement.value;};
+        </script>
+    </div>
+    <div>
+        dtheta_y -2<input id="dtheta_y" type="range"
+                          min="-2" max="2" step="1" value="0"/> 2
+        <script>
+            dtheta_y = 0;
+            document.getElementById("dtheta_y").onchange =
+                function () {dtheta_y = event.srcElement.value;};
+        </script>
+    </div>
+    <div>
+        dtheta_z -2<input id="dtheta_z" type="range"
+                          min="-2" max="2" step="1" value="0"/> 2
+        <script>
+            dtheta_z = 0;
+            document.getElementById("dtheta_z").onchange =
+                function () {dtheta_z = event.srcElement.value;};
+        </script>
+    </div>
+
+    <br>
+    Drawing Mode:
+    <br>
+    <select id="ViewMode" size="2">
+        <option value="0">wireframe</option>
+        <option value="1">filled</option>
+    </select>
+
+    <br>
+    Mesh:
+    <br>
+    <select id="MeshMode" size="4">
+        <option value="0">cube</option>
+        <option value="1">pyramid</option>
+        <option value="2">triangle</option>
+        <option value="3">creased cube</option>
+    </select>
+
+    <br>
+    <button id="SubdivideButton">Subdivide!</button>
+
+
+
+    <br>
+    <br>
+    </body>
+</html>
