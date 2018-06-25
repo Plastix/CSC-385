@@ -1,0 +1,98 @@
+<!doctype html>
+<html>
+
+    <script id="vertex-shader" type="x-shader/x-vertex">
+        attribute vec4 vPosition;
+        attribute vec4 vColor;
+        uniform mat4 modelViewMatrix;
+        varying vec4 fColor;
+        uniform vec4 shift;
+
+        void main()
+        {
+            fColor = vColor + shift;
+            gl_Position = vPosition;
+        }
+    </script>
+
+    <script id="fragment-shader" type="x-shader/x-fragment">
+        precision mediump float;
+        varying vec4 fColor;
+
+        void main()
+        {
+          gl_FragColor = fColor;
+        }
+    </script>
+
+
+    <script type="text/javascript" src="js/webgl-utils.js"></script>
+    <script type="text/javascript" src="js/initShaders.js"></script>
+    <script type="text/javascript" src="js/MV.js"></script>
+    <script type="text/javascript" src="js/paint_main.js"></script>
+    <script type="text/javascript" src="js/rasterizer.js"></script>
+
+    <body>
+
+    <canvas id="gl-canvas" width="512" height="512">
+        Sorry; your browser doesn't support HTML5 canvas.
+    </canvas>
+
+    <br>
+    Color Channels
+    <div>
+        0<input id="b_color_red" type="range"
+                           min="0" max="1" step="0.001" value="1.0"/> 1 Red
+        <script>
+            b_color_red = 1.0;
+            document.getElementById("b_color_red").onchange =
+            function () {b_color_red = event.srcElement.value;};
+        </script>
+    </div>
+
+
+    <div>
+        0<input id="b_color_green" type="range"
+                                    min="0" max="1" step="0.001" value="0.0"/> 1 Green
+        <script>
+            b_color_green = 0.0;
+            document.getElementById("b_color_green").onchange =
+                function () {b_color_green = event.srcElement.value;};
+        </script>
+    </div>
+
+
+
+    <div>
+        0<input id="b_color_blue" type="range"
+                                    min="0" max="1" step="0.001" value="0.0"/> 1 Blue
+        <script>
+            b_color_blue = 0.0;
+            document.getElementById("b_color_blue").onchange =
+                function () {b_color_blue = event.srcElement.value;};
+        </script>
+    </div>
+
+
+
+    <br>
+    Drawing Mode:
+    <br>
+    <select id="EditMode" size="6">
+        <option value="0">point</option>
+        <option value="1">line</option>
+        <option value="2">triangle</option>
+        <option value="3">filled triangle</option>
+        <option value="4">anti-aliased line</option>
+        <option value="5">filled 7-gon</option>
+    </select>
+
+
+    <br>
+    <br>
+    <button id="EraseButton">Erase picture!</button>
+    <button id="GridButton">Toggle Grid</button>
+    <button id="PartyButton">Toggle Party Mode</button>
+
+    </body>
+</html>
